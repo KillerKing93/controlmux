@@ -8,7 +8,15 @@
       <stop offset="100%" stop-color="#030408" />
     </linearGradient>
 
-    <!-- Intense Neon Glow Filters -->
+    <!-- Subtle Clean Glow Filters -->
+    <filter id="glow-subtle-cyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
     <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="8" result="blur1" />
       <feGaussianBlur stdDeviation="3" result="blur2" />
@@ -76,13 +84,9 @@
     <rect x="24" y="24" width="752" height="752" rx="28" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" />
 
     <!-- 4 Futuristic Corner Bracket Accents -->
-    <!-- Top-Left Corner Bracket -->
     <path d="M 30,80 L 30,40 A 10,10 0 0,1 40,30 L 80,30" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
-    <!-- Top-Right Corner Bracket -->
     <path d="M 720,30 L 760,30 A 10,10 0 0,1 770,40 L 770,80" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
-    <!-- Bottom-Left Corner Bracket -->
     <path d="M 30,720 L 30,760 A 10,10 0 0,0 40,770 L 80,770" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
-    <!-- Bottom-Right Corner Bracket -->
     <path d="M 720,770 L 760,770 A 10,10 0 0,0 770,760 L 770,720" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
 
     <!-- Edge Status LED Indicators -->
@@ -98,11 +102,11 @@
     <circle cx="400" cy="350" r="140" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12 8" />
     <circle cx="400" cy="350" r="95" fill="none" stroke="#00F2FE" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="6 6" />
 
-    <!-- Cyan Input Stream from Person 1 (285,340 -> 360,350) -->
+    <!-- Cyan Input Stream from Person 1 -->
     <path d="M 285,340 Q 320,350 360,350" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
     <circle cx="360" cy="350" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
 
-    <!-- Magenta Input Stream from Person 2 (515,340 -> 440,350) -->
+    <!-- Magenta Input Stream from Person 2 -->
     <path d="M 515,340 Q 480,350 440,350" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
     <circle cx="440" cy="350" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
 
@@ -119,7 +123,7 @@
       <polyline points="186,270 206,365 220,342" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
     </g>
 
-    <!-- Glassmorphic Name Badge Container (x=95, y=185, w=140, h=42). Text at x=176, y=211 DEAD CENTER -->
+    <!-- Glassmorphic Name Badge Container -->
     <g>
       <rect x="95" y="185" width="140" height="42" rx="10" fill="#071222" fill-opacity="0.95" stroke="#00F2FE" stroke-width="2" />
       <circle cx="118" cy="206" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
@@ -135,7 +139,7 @@
       <polyline points="614,270 594,365 580,342" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
     </g>
 
-    <!-- Glassmorphic Name Badge Container (x=565, y=185, w=140, h=42). Text at x=646, y=211 DEAD CENTER -->
+    <!-- Glassmorphic Name Badge Container -->
     <g>
       <rect x="565" y="185" width="140" height="42" rx="10" fill="#240712" fill-opacity="0.95" stroke="#FF0844" stroke-width="2" />
       <circle cx="588" cy="206" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
@@ -145,9 +149,9 @@
 
   <!-- LAYER 5: TYPOGRAPHY & BRANDING -->
   <g id="layer-05-typography" filter="url(#drop-shadow)">
-    <!-- Title Text -->
+    <!-- Title Text with subtle cyan neon glow on MUX -->
     <text x="400" y="620" font-family="'Segoe UI', 'Outfit', 'Inter', sans-serif" font-size="52" font-weight="900" letter-spacing="6" fill="#ffffff" text-anchor="middle">
-      CONTROL<tspan fill="#00F2FE">MUX</tspan>
+      CONTROL<tspan fill="#00F2FE" filter="url(#glow-subtle-cyan)">MUX</tspan>
     </text>
 
     <!-- Subtitle Pill Tag -->
