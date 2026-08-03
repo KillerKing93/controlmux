@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=ControlMux
+Comment=Multi-Person Input Control Engine for Windows and Linux
+Exec=controlmux
+Icon=assets/logo.svg
+Terminal=false
+Type=Application
+Categories=Utility;System;Settings;HardwareSettings;
+Keywords=mouse;keyboard;multiplex;input;multi-user;multi-cursor;
+StartupNotify=true

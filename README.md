@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="ControlMux App Logo" width="480">
+  <img src="assets/logo.svg" alt="ControlMux Application Logo" width="480">
 </p>
 
 <h1 align="center">ControlMux 🖱️⌨️</h1>
 
 <p align="center">
-  <b>Ultra-Lightweight Multi-Person Input Multiplexing Engine for Windows and Linux</b>
+  <b>Ultra-Lightweight Multi-Person Input Multiplexing Engine for Windows & Linux</b>
   <br>
   <i>Empower multiple users to operate on a single PC concurrently with dedicated mice, keyboards, virtual cursors, and focus isolation.</i>
 </p>
@@ -16,33 +16,33 @@
 
 ---
 
-## ⚡ Highlights
+## ⚡ Key Highlights
 
 - **Author**: Alif Nurhidayat (<alifnurhidayatwork@gmail.com>)
+- **Official Application Logo**: [`assets/logo.svg`](file:///d:/CraftThingy/controlmux/assets/logo.svg) — Vector 1:1 square master logo designed for app launchers, system tray, and taskbar icons.
 - **Ultra-Lightweight & Fast**: Single native C++17 binary (**~191 KB** executable size, **~6.5 MB** RAM usage, **< 0.1%** CPU usage).
-- **Cross-Platform Linux & Windows Support**: Native builds on **Arch Linux, Debian, CachyOS, SteamOS, Fedora, Ubuntu, and openSUSE**.
+- **Cross-Platform Linux & Windows Support**: Native builds on **Arch Linux, CachyOS, SteamOS, Debian, Ubuntu, Fedora, and openSUSE**.
 - **Zero Heavy Dependencies**: Built using native platform APIs (`Win32 Raw Input`, `GDI+` on Windows; `libevdev`, `/dev/input/`, `X11`/`Cairo` on Linux). No heavy Python, Node, or Electron runtime needed.
 - **Hardware-Level Device Pairing**: Maps physical mice and keyboards by unique hardware HID instance IDs (`HID\VID_xxxx&PID_xxxx` or `/dev/input/by-id/`).
 - **Multi-Cursor Overlay**: Transparent, double-buffered screen overlay with colored pointer arrows, click ripple animations, and person name badges (`Person 1`, `Person 2`).
-- **1:1 Square App Icon & Vector Source**: Logo is built in a 1:1 square aspect ratio with futuristic corner bracket edges—ready for use as an app icon (`.ico`, `.png`), taskbar icon, or GitHub avatar!
 - **Focus Isolation & Input Routing**:
   - **Switched Focus Mode**: Seamlessly switches active OS mouse focus when a person moves/clicks, while isolating secondary keyboards to prevent cross-person keypress pollution.
   - **Direct Target Mode**: Directs keypresses via native message injection to each person's target window handle.
-- **System Tray Management**: Easily toggle control, switch routing modes, and view device profiles from the system tray menu.
+- **System Tray & Linux Desktop Launcher**: System tray menu on Windows and standard `.desktop` launcher integration on Linux (`assets/controlmux.desktop`).
 
 ---
 
-## 🎨 Layered Logo System (Photoshop / Illustrator / Figma Ready)
+## 🎨 Layered Vector Logo System (Photoshop / Illustrator / Figma Ready)
 
-The ControlMux logo is designed as a **1:1 square multi-layer SVG vector graphics system** so you can freely edit, swap, or tweak any element:
+The ControlMux logo is built as a **1:1 square multi-layer SVG vector graphics system** so you can freely edit, swap, or tweak any element:
 
-- 📄 **Combined Layered Vector**: [`assets/logo.svg`](file:///d:/CraftThingy/controlmux/assets/logo.svg) (contains labeled `<g id="layer-01-background">`, `<g id="layer-03-cyan-cursor">` layer groups)
+- 📄 **Combined Layered Master Vector**: [`assets/logo.svg`](file:///d:/CraftThingy/controlmux/assets/logo.svg) (contains labeled `<g id="layer-01-background">`, `<g id="layer-03-cyan-cursor">` layer groups)
 - 📂 **Standalone Layer SVGs**: [`assets/logo_layers/`](file:///d:/CraftThingy/controlmux/assets/logo_layers/)
-  - `01_background.svg` (Dark gradient background, corner bracket edge accents & tech desktop grid)
-  - `02_circuit_core.svg` (Quantum multiplexer core node & circuit trails)
-  - `03_cyan_cursor.svg` (Person 1 cyan neon 3D pointer & glassmorphic badge)
-  - `04_magenta_cursor.svg` (Person 2 magenta neon 3D pointer & glassmorphic badge)
-  - `05_typography.svg` (ControlMux title typography & author credit)
+  - `01_background.svg` (Dark gradient background, corner bracket edge accents, honeycomb tech mesh & particle grid)
+  - `02_circuit_core.svg` (Quantum multiplexer core reactor & bottom-attached mouse cables)
+  - `03_cyan_cursor.svg` (Person 1 cyan neon 3D pointer, click ripple rings, mini keyboard icon & glassmorphic badge)
+  - `04_magenta_cursor.svg` (Person 2 magenta neon 3D pointer, click ripple rings, mini keyboard icon & glassmorphic badge)
+  - `05_typography.svg` (ControlMux title typography, author credit & `v1.0.0 NATIVE C++17` build badge)
 
 ---
 
@@ -51,8 +51,8 @@ The ControlMux logo is designed as a **1:1 square multi-layer SVG vector graphic
 ```
                      ┌───────────────────────────────┐
                      │ Physical Devices (Raw Input)  │
-                     │  Mouse 1, Keyboard 1 (Red)    │
-                     │  Mouse 2, Keyboard 2 (Blue)   │
+                     │  Mouse 1, Keyboard 1 (Cyan)   │
+                     │  Mouse 2, Keyboard 2 (Magenta)│
                      └───────────────┬───────────────┘
                                      │
                                      ▼

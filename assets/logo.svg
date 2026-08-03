@@ -80,7 +80,7 @@
     </linearGradient>
   </defs>
 
-  <!-- LAYER 1: RICH CYBERPUNK BACKGROUND (HEX MESH + CORNER FLARES + PARTICLES + BRACKETS) -->
+  <!-- LAYER 1: RICH CYBERPUNK BACKGROUND -->
   <g id="layer-01-background">
     <!-- Square Canvas Base -->
     <rect width="800" height="800" rx="36" fill="url(#bg-grad)" />
@@ -129,7 +129,7 @@
     <circle cx="770" cy="400" r="3" fill="#7F00FF" />
   </g>
 
-  <!-- LAYER 2: HIGH-TECH CABLES ATTACHED DIRECTLY TO THE BOTTOM OF THE MOUSE CURSORS -->
+  <!-- LAYER 2: HIGH-TECH CABLES ATTACHED DIRECTLY TO MOUSE CURSORS & MULTIPLEXER CORE -->
   <g id="layer-02-circuit-core">
     <!-- Outer Orbital Energy Rings -->
     <circle cx="400" cy="350" r="140" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12 8" />
@@ -162,9 +162,13 @@
     <circle cx="400" cy="350" r="18" fill="#00F2FE" filter="url(#glow-cyan)" />
   </g>
 
-  <!-- LAYER 3: PERSON 1 CYAN CURSOR -->
+  <!-- LAYER 3: PERSON 1 CYAN CURSOR, CLICK RIPPLE RINGS & MINI KEYBOARD ICON -->
   <g id="layer-03-cyan-cursor" filter="url(#drop-shadow)">
-    <!-- Cyan Cursor Geometry (Bottom Stem at 270,390) -->
+    <!-- Cyan Click Ripple Pulse Rings from Tip (180, 260) -->
+    <circle cx="180" cy="260" r="22" fill="none" stroke="#00F2FE" stroke-width="2" stroke-dasharray="4 4" opacity="0.85" filter="url(#glow-cyan)" />
+    <circle cx="180" cy="260" r="36" fill="none" stroke="#00F2FE" stroke-width="1.5" stroke-opacity="0.45" filter="url(#glow-cyan)" />
+
+    <!-- Cyan Cursor Geometry -->
     <g filter="url(#glow-cyan)">
       <polygon points="180,260 205,380 225,350 260,400 280,380 245,330 285,330" fill="url(#cyan-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
       <polyline points="186,270 206,365 220,342" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
@@ -176,11 +180,29 @@
       <circle cx="118" cy="206" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
       <text x="176" y="211" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 1</text>
     </g>
+
+    <!-- Mini Keyboard Vector Icon Accent (Person 1 Keyboard) -->
+    <g transform="translate(100, 138)">
+      <rect width="32" height="20" rx="4" fill="#0c1024" stroke="#00F2FE" stroke-width="1.5" />
+      <rect x="4" y="4" width="4" height="3" rx="1" fill="#00F2FE" />
+      <rect x="10" y="4" width="4" height="3" rx="1" fill="#00F2FE" />
+      <rect x="16" y="4" width="4" height="3" rx="1" fill="#00F2FE" />
+      <rect x="22" y="4" width="6" height="3" rx="1" fill="#00F2FE" />
+      <rect x="4" y="9" width="4" height="3" rx="1" fill="#ffffff" opacity="0.8" />
+      <rect x="10" y="9" width="4" height="3" rx="1" fill="#ffffff" opacity="0.8" />
+      <rect x="16" y="9" width="4" height="3" rx="1" fill="#ffffff" opacity="0.8" />
+      <rect x="22" y="9" width="6" height="3" rx="1" fill="#00F2FE" />
+      <rect x="8" y="14" width="16" height="3" rx="1" fill="#00F2FE" />
+    </g>
   </g>
 
-  <!-- LAYER 4: PERSON 2 MAGENTA CURSOR -->
+  <!-- LAYER 4: PERSON 2 MAGENTA CURSOR, CLICK RIPPLE RINGS & MINI KEYBOARD ICON -->
   <g id="layer-04-magenta-cursor" filter="url(#drop-shadow)">
-    <!-- Magenta Cursor Geometry (Bottom Stem at 530,390) -->
+    <!-- Magenta Click Ripple Pulse Rings from Tip (620, 260) -->
+    <circle cx="620" cy="260" r="22" fill="none" stroke="#FF0844" stroke-width="2" stroke-dasharray="4 4" opacity="0.85" filter="url(#glow-magenta)" />
+    <circle cx="620" cy="260" r="36" fill="none" stroke="#FF0844" stroke-width="1.5" stroke-opacity="0.45" filter="url(#glow-magenta)" />
+
+    <!-- Magenta Cursor Geometry -->
     <g filter="url(#glow-magenta)">
       <polygon points="620,260 595,380 575,350 540,400 520,380 555,330 515,330" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
       <polyline points="614,270 594,365 580,342" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
@@ -192,24 +214,44 @@
       <circle cx="588" cy="206" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
       <text x="646" y="211" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 2</text>
     </g>
+
+    <!-- Mini Keyboard Vector Icon Accent (Person 2 Keyboard) -->
+    <g transform="translate(668, 138)">
+      <rect width="32" height="20" rx="4" fill="#240712" stroke="#FF0844" stroke-width="1.5" />
+      <rect x="4" y="4" width="4" height="3" rx="1" fill="#FF0844" />
+      <rect x="10" y="4" width="4" height="3" rx="1" fill="#FF0844" />
+      <rect x="16" y="4" width="4" height="3" rx="1" fill="#FF0844" />
+      <rect x="22" y="4" width="6" height="3" rx="1" fill="#FF0844" />
+      <rect x="4" y="9" width="4" height="3" rx="1" fill="#ffffff" opacity="0.8" />
+      <rect x="10" y="9" width="4" height="3" rx="1" fill="#ffffff" opacity="0.8" />
+      <rect x="16" y="9" width="4" height="3" rx="1" fill="#ffffff" opacity="0.8" />
+      <rect x="22" y="9" width="6" height="3" rx="1" fill="#FF0844" />
+      <rect x="8" y="14" width="16" height="3" rx="1" fill="#FF0844" />
+    </g>
   </g>
 
-  <!-- LAYER 5: TYPOGRAPHY & BRANDING -->
+  <!-- LAYER 5: TYPOGRAPHY, BRANDING & TECH BUILD BADGE -->
   <g id="layer-05-typography" filter="url(#drop-shadow)">
     <!-- Title Text with subtle cyan neon glow on MUX -->
-    <text x="400" y="620" font-family="'Segoe UI', 'Outfit', 'Inter', sans-serif" font-size="52" font-weight="900" letter-spacing="6" fill="#ffffff" text-anchor="middle">
+    <text x="400" y="618" font-family="'Segoe UI', 'Outfit', 'Inter', sans-serif" font-size="52" font-weight="900" letter-spacing="6" fill="#ffffff" text-anchor="middle">
       CONTROL<tspan fill="#00F2FE" filter="url(#glow-subtle-cyan)">MUX</tspan>
     </text>
 
     <!-- Subtitle Pill Tag -->
-    <rect x="220" y="650" width="360" height="32" rx="16" fill="#0c1024" stroke="url(#core-grad)" stroke-width="1.5" />
-    <text x="400" y="671" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" letter-spacing="2" fill="#e2e8f0" text-anchor="middle">
+    <rect x="220" y="648" width="360" height="32" rx="16" fill="#0c1024" stroke="url(#core-grad)" stroke-width="1.5" />
+    <text x="400" y="669" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" letter-spacing="2" fill="#e2e8f0" text-anchor="middle">
       MULTI-PERSON INPUT CONTROL ENGINE
     </text>
 
     <!-- Author Attribution -->
-    <text x="400" y="718" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" letter-spacing="1.5" fill="#64748b" text-anchor="middle">
+    <text x="400" y="712" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" letter-spacing="1.5" fill="#64748b" text-anchor="middle">
       BY ALIF NURHIDAYAT
     </text>
+
+    <!-- Native Tech Build Pill Badge -->
+    <g>
+      <rect x="310" y="736" width="180" height="24" rx="12" fill="#080c1a" stroke="#00F2FE" stroke-width="1.2" stroke-opacity="0.7" />
+      <text x="400" y="752" font-family="'Segoe UI', Roboto, monospace" font-size="9.5" font-weight="800" letter-spacing="1.5" fill="#00F2FE" text-anchor="middle">v1.0.0 NATIVE C++17</text>
+    </g>
   </g>
 </svg>

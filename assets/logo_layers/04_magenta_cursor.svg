@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
   <defs>
-    <filter id="glow-magenta" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="8" result="blur1" /><feGaussianBlur stdDeviation="3" result="blur2" />
-      <feMerge><feMergeNode in="blur1" /><feMergeNode in="blur2" /><feMergeNode in="SourceGraphic" /></feMerge>
+    <filter id="glow-magenta" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur1" /><feMerge><feMergeNode in="blur1" /><feMergeNode in="SourceGraphic" /></feMerge>
     </filter>
     <filter id="drop-shadow" x="-30%" y="-30%" width="160%" height="160%">
       <feDropShadow dx="4" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.85" />
@@ -13,8 +12,10 @@
       <stop offset="100%" stop-color="#F9D423" />
     </linearGradient>
   </defs>
-  <!-- LAYER 4: PERSON 2 MAGENTA CURSOR -->
+  <!-- LAYER 4: PERSON 2 MAGENTA CURSOR, CLICK RIPPLE RINGS & MINI KEYBOARD ICON -->
   <g id="layer-04-magenta-cursor" filter="url(#drop-shadow)">
+    <circle cx="620" cy="260" r="22" fill="none" stroke="#FF0844" stroke-width="2" stroke-dasharray="4 4" opacity="0.85" filter="url(#glow-magenta)" />
+    <circle cx="620" cy="260" r="36" fill="none" stroke="#FF0844" stroke-width="1.5" stroke-opacity="0.45" filter="url(#glow-magenta)" />
     <g filter="url(#glow-magenta)">
       <polygon points="620,260 595,380 575,350 540,400 520,380 555,330 515,330" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
       <polyline points="614,270 594,365 580,342" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
@@ -23,6 +24,18 @@
       <rect x="565" y="185" width="140" height="42" rx="10" fill="#240712" fill-opacity="0.95" stroke="#FF0844" stroke-width="2" />
       <circle cx="588" cy="206" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
       <text x="646" y="211" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 2</text>
+    </g>
+    <g transform="translate(668, 138)">
+      <rect width="32" height="20" rx="4" fill="#240712" stroke="#FF0844" stroke-width="1.5" />
+      <rect x="4" y="4" width="4" height="3" rx="1" fill="#FF0844" />
+      <rect x="10" y="4" width="4" height="3" rx="1" fill="#FF0844" />
+      <rect x="16" y="4" width="4" height="3" rx="1" fill="#FF0844" />
+      <rect x="22" y="4" width="6" height="3" rx="1" fill="#FF0844" />
+      <rect x="4" y="9" width="4" height="3" rx="1" fill="#ffffff" opacity="0.8" />
+      <rect x="10" y="9" width="4" height="3" rx="1" fill="#ffffff" opacity="0.8" />
+      <rect x="16" y="9" width="4" height="3" rx="1" fill="#ffffff" opacity="0.8" />
+      <rect x="22" y="9" width="6" height="3" rx="1" fill="#FF0844" />
+      <rect x="8" y="14" width="16" height="3" rx="1" fill="#FF0844" />
     </g>
   </g>
 </svg>
