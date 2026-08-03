@@ -26,7 +26,7 @@ bool GuiWin32::Initialize(HINSTANCE hInstance, HWND hwndMain) {
     m_nid.cbSize = sizeof(NOTIFYICONDATAW);
     m_nid.hWnd = hwndMain;
     m_nid.uID = 1;
-    m_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    m_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_INFO;
     m_nid.uCallbackMessage = WM_TRAYICON;
     m_nid.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(101));
     if (!m_nid.hIcon) {
@@ -35,7 +35,10 @@ bool GuiWin32::Initialize(HINSTANCE hInstance, HWND hwndMain) {
     if (!m_nid.hIcon) {
         m_nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     }
-    wcscpy_s(m_nid.szTip, L"ControlMux - Multi-Person Control");
+    wcscpy_s(m_nid.szTip, L"ControlMux - Multi-Person Input Engine");
+    wcscpy_s(m_nid.szInfoTitle, L"ControlMux Active 🖱️⌨️");
+    wcscpy_s(m_nid.szInfo, L"ControlMux is running in your System Tray (bottom-right area). Right-click icon to configure device pairings.");
+    m_nid.dwInfoFlags = NIIF_INFO;
 
     Shell_NotifyIconW(NIM_ADD, &m_nid);
     return true;
