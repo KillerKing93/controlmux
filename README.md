@@ -1,10 +1,18 @@
-# ControlMux 🖱️⌨️
+<p align="center">
+  <img src="assets/logo.png" alt="ControlMux Logo" width="480">
+</p>
 
-> An **ultra-lightweight, multi-person input control utility** for Windows and Linux (Arch Linux, Debian, CachyOS, SteamOS, Fedora, Ubuntu, openSUSE) inspired by [MouseMux](https://www.mousemux.com/).
+<h1 align="center">ControlMux 🖱️⌨️</h1>
 
-Created by **Alif Nurhidayat** (`alifnurhidayatwork@gmail.com`).
+<p align="center">
+  <b>Ultra-Lightweight Multi-Person Input Multiplexing Engine for Windows and Linux</b>
+  <br>
+  <i>Empower multiple users to operate on a single PC concurrently with dedicated mice, keyboards, virtual cursors, and focus isolation.</i>
+</p>
 
-ControlMux enables multiple users on a single PC to work concurrently using separate hardware mouse and keyboard pairs. Each person receives a dedicated virtual cursor overlay, custom color, and isolated input focus context—ensuring that typing on one user's keyboard never leaks into another user's active window.
+<p align="center">
+  Created by <b>Alif Nurhidayat</b> (<a href="mailto:alifnurhidayatwork@gmail.com">alifnurhidayatwork@gmail.com</a>)
+</p>
 
 ---
 
