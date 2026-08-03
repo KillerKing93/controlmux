@@ -42,6 +42,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         return 0;
 
+    case WM_TIMER:
+        if (wParam == TIMER_TRAY_RETRY && g_gui) {
+            g_gui->OnTrayRetryTimer();
+        }
+        return 0;
+
     case WM_APP + 100:
         // Deferred startup: show Control Center dialog after message loop is running
         if (g_gui) g_gui->OpenPairingWindow(GetModuleHandle(NULL));
