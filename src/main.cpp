@@ -82,7 +82,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     HWND hwndMain = CreateWindowExW(
         0, L"ControlMuxMainWndClass", L"ControlMux Controller",
-        0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hInstance, NULL
+        WS_POPUP, 0, 0, 0, 0, NULL, NULL, hInstance, NULL
     );
 
     if (!hwndMain) {
