@@ -28,7 +28,13 @@ bool GuiWin32::Initialize(HINSTANCE hInstance, HWND hwndMain) {
     m_nid.uID = 1;
     m_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     m_nid.uCallbackMessage = WM_TRAYICON;
-    m_nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    m_nid.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(101));
+    if (!m_nid.hIcon) {
+        m_nid.hIcon = (HICON)LoadImageW(NULL, L"assets/app_icon.ico", IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
+    }
+    if (!m_nid.hIcon) {
+        m_nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    }
     wcscpy_s(m_nid.szTip, L"ControlMux - Multi-Person Control");
 
     Shell_NotifyIconW(NIM_ADD, &m_nid);

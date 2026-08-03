@@ -1,5 +1,8 @@
 #include <windows.h>
 
+#define IDI_APP_ICON 101
+IDI_APP_ICON ICON "assets/app_icon.ico"
+
 #define VS_VERSION_INFO 1
 
 VS_VERSION_INFO VERSIONINFO
