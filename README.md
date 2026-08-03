@@ -2,12 +2,15 @@
 
 > An **ultra-lightweight, multi-person input control utility** for Windows and Linux (Arch Linux, Debian, CachyOS, SteamOS, Fedora, Ubuntu, openSUSE) inspired by [MouseMux](https://www.mousemux.com/).
 
+Created by **Alif Nurhidayat** (`alifnurhidayatwork@gmail.com`).
+
 ControlMux enables multiple users on a single PC to work concurrently using separate hardware mouse and keyboard pairs. Each person receives a dedicated virtual cursor overlay, custom color, and isolated input focus context—ensuring that typing on one user's keyboard never leaks into another user's active window.
 
 ---
 
 ## ⚡ Highlights
 
+- **Author**: Alif Nurhidayat (<alifnurhidayatwork@gmail.com>)
 - **Ultra-Lightweight & Fast**: Single native C++17 binary (**~191 KB** executable size, **~6.5 MB** RAM usage, **< 0.1%** CPU usage).
 - **Cross-Platform Linux & Windows Support**: Native builds on **Arch Linux, Debian, CachyOS, SteamOS, Fedora, Ubuntu, and openSUSE**.
 - **Zero Heavy Dependencies**: Built using native platform APIs (`Win32 Raw Input`, `GDI+` on Windows; `libevdev`, `/dev/input/`, `X11`/`Cairo` on Linux). No heavy Python, Node, or Electron runtime needed.
@@ -90,6 +93,8 @@ cmake --build .
 
 ## ⚖️ License Terms ([LICENSE.md](file:///d:/CraftThingy/controlmux/LICENSE.md))
 
+Copyright (c) 2026 **Alif Nurhidayat** (`alifnurhidayatwork@gmail.com`).
+
 - **Personal & Non-Commercial Use**: Completely **FREE** to use, modify, and study for personal, research, or educational purposes.
 - **Share-Alike Requirement**: Any modifications, forks, or derivative works must be publicly shared open-source under the exact same license terms.
-- **Corporate & Commercial Royalty**: Commercial entities, corporations, and revenue-generating organizations **must pay a commercial royalty license** to deploy, integrate, or use ControlMux in business environments.
+- **Corporate & Commercial Royalty**: Commercial entities, corporations, and revenue-generating organizations **must pay a commercial royalty license** to Alif Nurhidayat (`alifnurhidayatwork@gmail.com`) to deploy, integrate, or use ControlMux in business environments.
