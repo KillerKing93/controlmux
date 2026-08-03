@@ -21,6 +21,9 @@ enum class RoutingMode {
     DirectTarget = 1    ///< Keypresses are injected directly to the target window under each person's virtual cursor.
 };
 
+/// Maximum number of simultaneous persons supported.
+static constexpr int MAX_PERSONS = 16;
+
 /**
  * @brief Profile configuration for an individual person.
  */

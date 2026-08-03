@@ -1,85 +1,157 @@
 /**
  * @file gui_win32.cpp
- * @brief Implementation of ControlMux GUI: floating control panel window
- *        (system tray is skipped if Shell_TrayWnd is not available).
+ * @brief ControlMux floating Control Center panel — supports up to 16 persons.
  */
 
 #include "gui_win32.hpp"
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <ctime>
+#include <algorithm>
 
 GuiWin32* GuiWin32::s_gui_instance = nullptr;
 
-// Debug log to file
+// ── Debug log ──────────────────────────────────────────────────────────────
 static std::wofstream g_dbg;
-#define DBG(x) do { if(g_dbg.is_open()){g_dbg<<x<<L"\n";g_dbg.flush();} } while(0)
+#define DBG(x) do{if(g_dbg.is_open()){g_dbg<<x<<L"\n";g_dbg.flush();}}while(0)
 
-// ── colours ────────────────────────────────────────────────────────────────
-static const COLORREF CLR_BG       = RGB(15,  17,  26);   // near-black navy
-static const COLORREF CLR_ACCENT   = RGB(0,  200, 255);   // cyan
-static const COLORREF CLR_TEXT     = RGB(220, 225, 240);  // light grey
-static const COLORREF CLR_GREEN    = RGB(0,  220, 120);
-static const COLORREF CLR_RED      = RGB(255,  60,  80);
-static const COLORREF CLR_BTN      = RGB(30,  34,  50);
-static const COLORREF CLR_BTN_HOV  = RGB(0,  170, 210);
-static const int      PANEL_W      = 380;
-static const int      PANEL_H      = 280;
+// ── 16-person color palette (ARGB 0xFFRRGGBB) ─────────────────────────────
+static const DWORD PERSON_COLORS[16] = {
+    0xFFFF2244, // 1  Red
+    0xFF1A7FFF, // 2  Blue
+    0xFF00CC55, // 3  Green
+    0xFFFF9900, // 4  Orange
+    0xFFBB33FF, // 5  Purple
+    0xFF00DDFF, // 6  Cyan
+    0xFFFF55AA, // 7  Pink
+    0xFFFFE800, // 8  Yellow
+    0xFF00FFB0, // 9  Mint
+    0xFFFF6644, // 10 Coral
+    0xFF5588FF, // 11 Periwinkle
+    0xFF88FF22, // 12 Lime
+    0xFFFF3388, // 13 Rose
+    0xFF9944FF, // 14 Violet
+    0xFF22FFDD, // 15 Turquoise
+    0xFFFF44FF, // 16 Magenta
+};
 
-// ── button IDs ─────────────────────────────────────────────────────────────
-#define BTN_TOGGLE   100
-#define BTN_MODE     101
-#define BTN_EXIT     102
+// ── Palette: convert DWORD ARGB → COLORREF RGB ────────────────────────────
+static inline COLORREF ArgbToColorref(DWORD argb) {
+    return RGB((argb >> 16) & 0xFF, (argb >> 8) & 0xFF, argb & 0xFF);
+}
 
-// ── helpers ────────────────────────────────────────────────────────────────
-static HFONT MakeFont(int sz, bool bold = false) {
-    return CreateFontW(sz, 0, 0, 0, bold ? FW_BOLD : FW_NORMAL,
-                       FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+// ── Layout constants ───────────────────────────────────────────────────────
+static const int PW          = 460;  // panel width
+static const int HDR_H       = 170;  // header height (title + status + controls)
+static const int ROW_H       = 42;   // height of each person row
+static const int LIST_ROWS   = 6;    // visible person rows at once
+static const int LIST_H      = ROW_H * LIST_ROWS;
+static const int BTN_AREA_H  = 90;   // add/remove/exit buttons area
+static const int FOOTER_H    = 24;
+static const int PH = HDR_H + LIST_H + BTN_AREA_H + FOOTER_H; // ≈ 540
+
+// Button IDs
+#define BTN_TOGGLE      100
+#define BTN_MODE        101
+#define BTN_EXIT        102
+#define BTN_ADD         103
+#define BTN_REMOVE      104
+#define BTN_SCROLL_UP   105
+#define BTN_SCROLL_DOWN 106
+
+// ── Colours ────────────────────────────────────────────────────────────────
+static const COLORREF BG       = RGB(12,  14,  22);
+static const COLORREF ACCENT   = RGB(0,  200, 255);
+static const COLORREF ACCENT2  = RGB(160, 60, 255);
+static const COLORREF TXT      = RGB(210, 218, 235);
+static const COLORREF TXT_DIM  = RGB(80,  90, 110);
+static const COLORREF GREEN    = RGB(0,  220, 120);
+static const COLORREF RED_C    = RGB(255, 60,  80);
+static const COLORREF DIVIDER  = RGB(30,  35,  52);
+static const COLORREF ROW_ALT  = RGB(18,  20,  32);
+static const COLORREF ROW_HOV  = RGB(22,  26,  42);
+
+// ── Font helper ───────────────────────────────────────────────────────────
+static HFONT MakeFont(int sz, bool bold = false, bool italic = false) {
+    return CreateFontW(sz, 0, 0, 0,
+                       bold   ? FW_BOLD : FW_NORMAL,
+                       italic ? TRUE : FALSE,
+                       FALSE, FALSE, DEFAULT_CHARSET,
                        OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                        CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_SWISS,
                        L"Segoe UI");
 }
 
-// ── window procedure ───────────────────────────────────────────────────────
+// ── Draw a filled rounded rectangle (GDI approximation) ───────────────────
+static void FillRoundRect(HDC hdc, int x, int y, int w, int h, int r, COLORREF c) {
+    HBRUSH br = CreateSolidBrush(c);
+    RECT rc = {x, y, x+w, y+h};
+    // Use rounded corners via RoundRect
+    HBRUSH old = (HBRUSH)SelectObject(hdc, br);
+    HPEN pen = CreatePen(PS_NULL, 0, c);
+    HPEN oldp = (HPEN)SelectObject(hdc, pen);
+    RoundRect(hdc, x, y, x+w, y+h, r, r);
+    SelectObject(hdc, old);
+    SelectObject(hdc, oldp);
+    DeleteObject(br);
+    DeleteObject(pen);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// PanelWndProc
+// ══════════════════════════════════════════════════════════════════════════
 LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
     GuiWin32* self = reinterpret_cast<GuiWin32*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 
     switch (msg) {
+
+    // ── Create child controls ───────────────────────────────────────────
     case WM_CREATE: {
         CREATESTRUCTW* cs = reinterpret_cast<CREATESTRUCTW*>(lp);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)cs->lpCreateParams);
         self = reinterpret_cast<GuiWin32*>(cs->lpCreateParams);
 
-        // Buttons
-        HFONT fBtn = MakeFont(13, true);
-        HWND hToggle = CreateWindowExW(0, L"BUTTON", L"Toggle Enable/Pause",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            20, 160, 160, 34, hwnd, (HMENU)BTN_TOGGLE, cs->hInstance, NULL);
-        SendMessageW(hToggle, WM_SETFONT, (WPARAM)fBtn, TRUE);
+        HFONT fBtn  = MakeFont(12, true);
+        HFONT fSmall = MakeFont(11, false);
+        HINSTANCE hi = cs->hInstance;
 
-        HWND hMode = CreateWindowExW(0, L"BUTTON", L"Switch Mode",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            195, 160, 160, 34, hwnd, (HMENU)BTN_MODE, cs->hInstance, NULL);
-        SendMessageW(hMode, WM_SETFONT, (WPARAM)fBtn, TRUE);
+        // Row 1: Toggle + Mode
+        auto Btn = [&](const wchar_t* txt, int x, int y, int w, int h, int id, HFONT f) {
+            HWND b = CreateWindowExW(0, L"BUTTON", txt,
+                WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                x, y, w, h, hwnd, (HMENU)(INT_PTR)id, hi, NULL);
+            SendMessageW(b, WM_SETFONT, (WPARAM)f, TRUE);
+            return b;
+        };
 
-        HWND hExit = CreateWindowExW(0, L"BUTTON", L"Exit ControlMux",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            20, 210, 335, 34, hwnd, (HMENU)BTN_EXIT, cs->hInstance, NULL);
-        SendMessageW(hExit, WM_SETFONT, (WPARAM)fBtn, TRUE);
+        int y0 = HDR_H - 46;
+        Btn(L"⏸ Toggle Enable",   14, y0,      210, 32, BTN_TOGGLE, fBtn);
+        Btn(L"⇄ Switch Mode",     232, y0,      214, 32, BTN_MODE,   fBtn);
+
+        // Scroll arrows for person list
+        int listY = HDR_H;
+        Btn(L"▲", PW - 30, listY,           26, LIST_H/2 - 1, BTN_SCROLL_UP,   fSmall);
+        Btn(L"▼", PW - 30, listY + LIST_H/2, 26, LIST_H/2,     BTN_SCROLL_DOWN, fSmall);
+
+        // Row below list: Add / Remove / Exit
+        int bY = HDR_H + LIST_H + 10;
+        Btn(L"＋ Add Person",      14,  bY,      210, 32, BTN_ADD,    fBtn);
+        Btn(L"－ Remove Last",     232, bY,      214, 32, BTN_REMOVE, fBtn);
+        Btn(L"✕  Exit ControlMux",14,  bY + 42, 432, 32, BTN_EXIT,  fBtn);
 
         return 0;
     }
 
+    // ── Suppress background erase (we paint everything) ─────────────────
     case WM_ERASEBKGND: {
-        HDC hdc = (HDC)wp;
         RECT rc; GetClientRect(hwnd, &rc);
-        HBRUSH br = CreateSolidBrush(CLR_BG);
-        FillRect(hdc, &rc, br);
+        HBRUSH br = CreateSolidBrush(BG);
+        FillRect((HDC)wp, &rc, br);
         DeleteObject(br);
         return 1;
     }
 
+    // ── Paint ────────────────────────────────────────────────────────────
     case WM_PAINT: {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hwnd, &ps);
@@ -88,96 +160,269 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
         RECT rc; GetClientRect(hwnd, &rc);
 
         // Background
-        HBRUSH brBg = CreateSolidBrush(CLR_BG);
+        HBRUSH brBg = CreateSolidBrush(BG);
         FillRect(hdc, &rc, brBg);
         DeleteObject(brBg);
 
-        // Accent top bar
-        RECT topBar = {0, 0, rc.right, 4};
-        HBRUSH brAccent = CreateSolidBrush(CLR_ACCENT);
-        FillRect(hdc, &topBar, brAccent);
-        DeleteObject(brAccent);
-
-        // Title
-        HFONT fTitle = MakeFont(20, true);
-        HFONT fOld   = (HFONT)SelectObject(hdc, fTitle);
-        SetTextColor(hdc, CLR_ACCENT);
-        RECT rcTitle = {20, 14, rc.right - 20, 50};
-        DrawTextW(hdc, L"ControlMux", -1, &rcTitle, DT_LEFT | DT_SINGLELINE);
-
-        // Sub-title
-        HFONT fSub = MakeFont(11);
-        SelectObject(hdc, fSub);
-        SetTextColor(hdc, CLR_TEXT);
-        RECT rcSub = {20, 42, rc.right - 20, 66};
-        DrawTextW(hdc, L"Multi-Person Input Engine  v1.0.0", -1, &rcSub, DT_LEFT | DT_SINGLELINE);
-
-        // Separator
-        HPEN pen = CreatePen(PS_SOLID, 1, CLR_BTN);
-        HPEN penOld = (HPEN)SelectObject(hdc, pen);
-        MoveToEx(hdc, 20, 68, NULL);
-        LineTo(hdc, rc.right - 20, 68);
-        SelectObject(hdc, penOld);
-        DeleteObject(pen);
-
-        // Status row
-        if (self) {
-            HFONT fLabel = MakeFont(12, true);
-            SelectObject(hdc, fLabel);
-
-            // Status
-            bool en = self->m_config.enabled;
-            SetTextColor(hdc, en ? CLR_GREEN : CLR_RED);
-            RECT rcSt = {20, 80, 200, 106};
-            DrawTextW(hdc, en ? L"\u25CF  ACTIVE" : L"\u25CF  PAUSED", -1, &rcSt, DT_LEFT | DT_SINGLELINE);
-
-            // Mode
-            SetTextColor(hdc, CLR_TEXT);
-            RECT rcMd = {20, 108, rc.right - 20, 132};
-            bool sf = (self->m_config.mode == RoutingMode::SwitchedFocus);
-            std::wstring modeStr = std::wstring(L"Mode:  ") + (sf ? L"Switched Focus" : L"Direct Target");
-            DrawTextW(hdc, modeStr.c_str(), -1, &rcMd, DT_LEFT | DT_SINGLELINE);
-
-            // Person count
-            RECT rcPc = {20, 130, rc.right - 20, 154};
-            std::wstring pcStr = L"Profiles:  " + std::to_wstring(self->m_config.persons.size()) + L" person(s) configured";
-            DrawTextW(hdc, pcStr.c_str(), -1, &rcPc, DT_LEFT | DT_SINGLELINE);
-
-            DeleteObject(fLabel);
+        // ── Gradient top bar (3px accent) ───────────────────────────────
+        for (int x = 0; x < rc.right; ++x) {
+            float t  = (float)x / rc.right;
+            BYTE r = (BYTE)(0   + t * 160);
+            BYTE g = (BYTE)(200 + t * (60 - 200));
+            BYTE b = (BYTE)(255 + t * (255 - 255));
+            HPEN p = CreatePen(PS_SOLID, 1, RGB(r, g, b));
+            HPEN op = (HPEN)SelectObject(hdc, p);
+            MoveToEx(hdc, x, 0, NULL); LineTo(hdc, x, 4);
+            SelectObject(hdc, op); DeleteObject(p);
         }
 
-        SelectObject(hdc, fOld);
-        DeleteObject(fTitle);
-        DeleteObject(fSub);
+        // ── Title ────────────────────────────────────────────────────────
+        HFONT fTitle = MakeFont(22, true);
+        HFONT fOld   = (HFONT)SelectObject(hdc, fTitle);
+        SetTextColor(hdc, ACCENT);
+        RECT rtit = {16, 10, rc.right, 42};
+        DrawTextW(hdc, L"ControlMux", -1, &rtit, DT_LEFT | DT_SINGLELINE);
 
-        // Footer
-        HFONT fFt = MakeFont(10);
+        HFONT fSub = MakeFont(10, false, true);
+        SelectObject(hdc, fSub);
+        SetTextColor(hdc, TXT_DIM);
+        RECT rsub = {16, 38, rc.right, 56};
+        DrawTextW(hdc, L"Multi-Person Input Engine  v1.0.0  \u2014  Alif Nurhidayat",
+                  -1, &rsub, DT_LEFT | DT_SINGLELINE);
+
+        // ── Status + mode row ─────────────────────────────────────────────
+        HFONT fLbl = MakeFont(12, true);
+        SelectObject(hdc, fLbl);
+
+        if (self) {
+            bool en = self->m_config.enabled;
+            bool sf = (self->m_config.mode == RoutingMode::SwitchedFocus);
+            int  np = (int)self->m_config.persons.size();
+
+            // Status pill
+            COLORREF pillC = en ? RGB(0,180,80) : RGB(160,40,60);
+            FillRoundRect(hdc, 16, 62, 120, 22, 8, pillC);
+            SetTextColor(hdc, RGB(255,255,255));
+            RECT rsp = {16, 63, 136, 84};
+            DrawTextW(hdc, en ? L"\u25CF  ACTIVE" : L"\u25A0  PAUSED", -1, &rsp, DT_CENTER | DT_SINGLELINE);
+
+            // Mode pill
+            FillRoundRect(hdc, 144, 62, 150, 22, 8, RGB(30,40,70));
+            SetTextColor(hdc, ACCENT);
+            RECT rmp = {144, 63, 294, 84};
+            DrawTextW(hdc, sf ? L"\u21c4 Switched Focus" : L"\u2937 Direct Target",
+                      -1, &rmp, DT_CENTER | DT_SINGLELINE);
+
+            // Person count badge
+            SetTextColor(hdc, TXT_DIM);
+            RECT rpc = {300, 63, rc.right - 8, 84};
+            std::wstring ps_str = std::to_wstring(np) + L" / 16";
+            DrawTextW(hdc, ps_str.c_str(), -1, &rpc, DT_RIGHT | DT_SINGLELINE);
+
+            // Divider
+            HPEN div = CreatePen(PS_SOLID, 1, DIVIDER);
+            HPEN divOld = (HPEN)SelectObject(hdc, div);
+            MoveToEx(hdc, 14, 94, NULL); LineTo(hdc, rc.right - 14, 94);
+            SelectObject(hdc, divOld); DeleteObject(div);
+
+            // ── Person list header ────────────────────────────────────────
+            HFONT fHdr = MakeFont(10, true);
+            SelectObject(hdc, fHdr);
+            SetTextColor(hdc, TXT_DIM);
+            RECT rhdr = {14, 97, rc.right - 34, 115};
+            DrawTextW(hdc, L"  #   PERSON NAME            MOUSE      KEYBOARD",
+                      -1, &rhdr, DT_LEFT | DT_SINGLELINE);
+
+            // Divider 2
+            MoveToEx(hdc, 14, 113, NULL); LineTo(hdc, rc.right - 34, 113);
+
+            // ── Person rows ───────────────────────────────────────────────
+            HFONT fRow  = MakeFont(12, true);
+            HFONT fRowS = MakeFont(11, false);
+
+            int listTop = HDR_H;  // == 170
+            int visStart = self->m_scroll_offset;
+            int visEnd   = visStart + LIST_ROWS;
+
+            // Clip to list viewport
+            HRGN clip = CreateRectRgn(0, listTop, rc.right - 28, listTop + LIST_H);
+            SelectClipRgn(hdc, clip);
+
+            for (int i = visStart; i < visEnd && i < np; ++i) {
+                const auto& p = self->m_config.persons[i];
+                int ry = listTop + (i - visStart) * ROW_H;
+
+                // Alternating row bg
+                HBRUSH rowBr = CreateSolidBrush((i % 2 == 0) ? BG : ROW_ALT);
+                RECT rrow = {0, ry, rc.right - 28, ry + ROW_H};
+                FillRect(hdc, &rrow, rowBr);
+                DeleteObject(rowBr);
+
+                // Color swatch
+                COLORREF swatch = ArgbToColorref(p.color);
+                FillRoundRect(hdc, 6, ry + 11, 14, 20, 4, swatch);
+
+                // Person number
+                SelectObject(hdc, fRowS);
+                SetTextColor(hdc, TXT_DIM);
+                RECT rnum = {24, ry + 12, 44, ry + 30};
+                DrawTextW(hdc, std::to_wstring(p.id).c_str(), -1, &rnum, DT_RIGHT | DT_SINGLELINE);
+
+                // Name
+                SelectObject(hdc, fRow);
+                SetTextColor(hdc, TXT);
+                RECT rname = {50, ry + 10, 200, ry + 30};
+                std::wstring nm = p.name;
+                if (nm.size() > 14) nm = nm.substr(0, 13) + L"\u2026";
+                DrawTextW(hdc, nm.c_str(), -1, &rname, DT_LEFT | DT_SINGLELINE);
+
+                // Mouse status dot
+                bool hasM = !p.mouse_hwid.empty();
+                COLORREF mc = hasM ? GREEN : RGB(60,65,80);
+                FillRoundRect(hdc, 208, ry + 14, 58, 14, 5, mc);
+                SelectObject(hdc, fRowS);
+                SetTextColor(hdc, RGB(255,255,255));
+                RECT rmouse = {208, ry + 14, 266, ry + 28};
+                DrawTextW(hdc, hasM ? L"\u25CF Paired" : L"\u25CB Auto", -1, &rmouse, DT_CENTER | DT_SINGLELINE);
+
+                // Keyboard status dot
+                bool hasK = !p.keyboard_hwid.empty();
+                COLORREF kc = hasK ? GREEN : RGB(60,65,80);
+                FillRoundRect(hdc, 272, ry + 14, 58, 14, 5, kc);
+                RECT rkb = {272, ry + 14, 330, ry + 28};
+                DrawTextW(hdc, hasK ? L"\u25CF Paired" : L"\u25CB Auto", -1, &rkb, DT_CENTER | DT_SINGLELINE);
+
+                // Row bottom divider
+                HPEN rowDiv = CreatePen(PS_SOLID, 1, DIVIDER);
+                HPEN rdOld  = (HPEN)SelectObject(hdc, rowDiv);
+                MoveToEx(hdc, 0, ry + ROW_H - 1, NULL);
+                LineTo(hdc,   rc.right - 28, ry + ROW_H - 1);
+                SelectObject(hdc, rdOld); DeleteObject(rowDiv);
+            }
+
+            // If fewer persons than visible rows, fill empty slots
+            for (int i = np; i < visStart + LIST_ROWS; ++i) {
+                int ry = listTop + (i - visStart) * ROW_H;
+                HBRUSH eb = CreateSolidBrush((i % 2 == 0) ? BG : ROW_ALT);
+                RECT er = {0, ry, rc.right - 28, ry + ROW_H};
+                FillRect(hdc, &er, eb);
+                DeleteObject(eb);
+                if (np < MAX_PERSONS) {
+                    SetTextColor(hdc, DIVIDER);
+                    SelectObject(hdc, fRowS);
+                    RECT eh = {0, ry + 13, rc.right - 28, ry + 29};
+                    DrawTextW(hdc, L"\u2014  empty slot  \u2014", -1, &eh, DT_CENTER | DT_SINGLELINE);
+                }
+            }
+
+            SelectClipRgn(hdc, NULL);
+            DeleteObject(clip);
+
+            DeleteObject(fRow);
+            DeleteObject(fRowS);
+            DeleteObject(fHdr);
+        }
+
+        // ── Section label above button area ───────────────────────────────
+        int btnY = HDR_H + LIST_H;
+        HPEN div2 = CreatePen(PS_SOLID, 1, DIVIDER);
+        HPEN d2Old = (HPEN)SelectObject(hdc, div2);
+        MoveToEx(hdc, 0, btnY, NULL); LineTo(hdc, rc.right, btnY);
+        SelectObject(hdc, d2Old); DeleteObject(div2);
+
+        // ── Footer ────────────────────────────────────────────────────────
+        HFONT fFt = MakeFont(9, false, true);
         SelectObject(hdc, fFt);
-        SetTextColor(hdc, RGB(80, 90, 110));
-        RECT rcFt = {0, rc.bottom - 22, rc.right, rc.bottom - 4};
-        DrawTextW(hdc, L"Alif Nurhidayat \u00a9 2024  |  alifnurhidayatwork@gmail.com",
-                  -1, &rcFt, DT_CENTER | DT_SINGLELINE);
+        SetTextColor(hdc, TXT_DIM);
+        RECT rfooter = {0, rc.bottom - 20, rc.right, rc.bottom - 4};
+        DrawTextW(hdc,
+            L"ControlMux \u00a9 Alif Nurhidayat  \u2014  alifnurhidayatwork@gmail.com  "
+            L"\u2014  Commercial: $29/seat or 7.5% royalty",
+            -1, &rfooter, DT_CENTER | DT_SINGLELINE);
         DeleteObject(fFt);
+
+        SelectObject(hdc, fOld);
+        DeleteObject(fTitle); DeleteObject(fSub);
+        DeleteObject(fLbl);
 
         EndPaint(hwnd, &ps);
         return 0;
     }
 
+    // ── Mouse wheel scrolls the person list ──────────────────────────────
+    case WM_MOUSEWHEEL:
+        if (self) {
+            int delta = GET_WHEEL_DELTA_WPARAM(wp);
+            int maxOff = (int)self->m_config.persons.size() - LIST_ROWS;
+            if (delta < 0) self->m_scroll_offset = std::min(self->m_scroll_offset + 1, std::max(0, maxOff));
+            else            self->m_scroll_offset = std::max(self->m_scroll_offset - 1, 0);
+            InvalidateRect(hwnd, NULL, FALSE);
+        }
+        return 0;
+
+    // ── Button commands ───────────────────────────────────────────────────
     case WM_COMMAND:
         if (!self) break;
         switch (LOWORD(wp)) {
+
         case BTN_TOGGLE:
             self->m_config.enabled = !self->m_config.enabled;
             ConfigManager::Save(L"controlmux_config.ini", self->m_config);
-            InvalidateRect(hwnd, NULL, TRUE);
+            InvalidateRect(hwnd, NULL, FALSE);
             break;
+
         case BTN_MODE:
             self->m_config.mode = (self->m_config.mode == RoutingMode::SwitchedFocus)
                                   ? RoutingMode::DirectTarget
                                   : RoutingMode::SwitchedFocus;
             ConfigManager::Save(L"controlmux_config.ini", self->m_config);
-            InvalidateRect(hwnd, NULL, TRUE);
+            InvalidateRect(hwnd, NULL, FALSE);
             break;
+
+        case BTN_ADD: {
+            int n = (int)self->m_config.persons.size();
+            if (n >= MAX_PERSONS) {
+                MessageBoxW(hwnd, L"Maximum 16 persons reached.", L"ControlMux", MB_OK | MB_ICONINFORMATION);
+                break;
+            }
+            PersonConfig p;
+            p.id    = n + 1;
+            p.name  = L"Person " + std::to_wstring(p.id);
+            p.color = PERSON_COLORS[n % 16];
+            self->m_config.persons.push_back(p);
+            // Auto-scroll to bottom to show new entry
+            int maxOff = (int)self->m_config.persons.size() - LIST_ROWS;
+            self->m_scroll_offset = std::max(0, maxOff);
+            ConfigManager::Save(L"controlmux_config.ini", self->m_config);
+            InvalidateRect(hwnd, NULL, FALSE);
+            break;
+        }
+
+        case BTN_REMOVE: {
+            if (self->m_config.persons.size() <= 1) {
+                MessageBoxW(hwnd, L"At least 1 person required.", L"ControlMux", MB_OK | MB_ICONINFORMATION);
+                break;
+            }
+            self->m_config.persons.pop_back();
+            int maxOff = (int)self->m_config.persons.size() - LIST_ROWS;
+            self->m_scroll_offset = std::max(0, std::min(self->m_scroll_offset, maxOff));
+            ConfigManager::Save(L"controlmux_config.ini", self->m_config);
+            InvalidateRect(hwnd, NULL, FALSE);
+            break;
+        }
+
+        case BTN_SCROLL_UP:
+            self->m_scroll_offset = std::max(0, self->m_scroll_offset - 1);
+            InvalidateRect(hwnd, NULL, FALSE);
+            break;
+
+        case BTN_SCROLL_DOWN: {
+            int maxOff = (int)self->m_config.persons.size() - LIST_ROWS;
+            self->m_scroll_offset = std::min(self->m_scroll_offset + 1, std::max(0, maxOff));
+            InvalidateRect(hwnd, NULL, FALSE);
+            break;
+        }
+
         case BTN_EXIT:
             DestroyWindow(hwnd);
             break;
@@ -194,44 +439,34 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
     return 0;
 }
 
-// ── public interface ───────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+// Public interface
+// ══════════════════════════════════════════════════════════════════════════
 GuiWin32::GuiWin32(DeviceManager& dev_mgr, FocusRouter& router, AppConfig& config)
     : m_dev_mgr(dev_mgr), m_router(router), m_config(config) {
     s_gui_instance = this;
 }
 
-GuiWin32::~GuiWin32() {
-    Shutdown();
-}
+GuiWin32::~GuiWin32() { Shutdown(); }
 
 bool GuiWin32::Initialize(HINSTANCE hInstance, HWND hwndMsg) {
     g_dbg.open(L"cmux_gui.log", std::ios::trunc);
     DBG(L"=== GuiWin32::Initialize ===");
     m_hwndMsg   = hwndMsg;
     m_hInstance = hInstance;
-    DBG(L"hInstance=" << (ULONG_PTR)hInstance << L" hwndMsg=" << (ULONG_PTR)hwndMsg);
-
-    // ── Try system tray first (only if Explorer taskbar exists) ──
-    HWND hTrayWnd = FindWindowW(L"Shell_TrayWnd", NULL);
-    DBG(L"Shell_TrayWnd: " << (hTrayWnd ? L"FOUND" : L"NOT FOUND"));
-
-    // ── Always open control panel window ──
+    DBG(L"Shell_TrayWnd: " << (FindWindowW(L"Shell_TrayWnd", NULL) ? L"FOUND" : L"NOT FOUND"));
     DBG(L"Calling OpenControlPanel...");
     OpenControlPanel();
-    DBG(L"OpenControlPanel returned. m_hwndPanel=" << (ULONG_PTR)m_hwndPanel);
+    DBG(L"Done. m_hwndPanel=" << (ULONG_PTR)m_hwndPanel);
     return true;
 }
 
 void GuiWin32::OpenControlPanel() {
-    DBG(L"--- OpenControlPanel ---");
-
     if (m_hwndPanel && IsWindow(m_hwndPanel)) {
-        DBG(L"Panel already exists, bringing to front");
         SetForegroundWindow(m_hwndPanel);
         return;
     }
 
-    // Register panel class
     WNDCLASSEXW wc = {};
     wc.cbSize        = sizeof(wc);
     wc.lpfnWndProc   = PanelWndProc;
@@ -240,68 +475,46 @@ void GuiWin32::OpenControlPanel() {
     wc.lpszClassName = L"ControlMuxPanel";
     wc.hIcon         = LoadIcon(m_hInstance, MAKEINTRESOURCE(101));
     wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    ATOM atom = RegisterClassExW(&wc);
-    DBG(L"RegisterClassExW: atom=" << atom << L" LastError=" << GetLastError());
+    RegisterClassExW(&wc);
 
-    // Get primary monitor work area
-    POINT ptPrimary = {1, 1};
-    HMONITOR hMon = MonitorFromPoint(ptPrimary, MONITOR_DEFAULTTOPRIMARY);
-    MONITORINFO mi = {};
-    mi.cbSize = sizeof(mi);
-    BOOL miOk = GetMonitorInfoW(hMon, &mi);
-    DBG(L"GetMonitorInfo: ok=" << miOk
-        << L" work=[" << mi.rcWork.left << L"," << mi.rcWork.top
+    POINT pt = {1, 1};
+    HMONITOR hMon = MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY);
+    MONITORINFO mi = {}; mi.cbSize = sizeof(mi);
+    GetMonitorInfoW(hMon, &mi);
+    int wx = mi.rcWork.left + (mi.rcWork.right  - mi.rcWork.left - PW) / 2;
+    int wy = mi.rcWork.top  + (mi.rcWork.bottom - mi.rcWork.top  - PH) / 2;
+
+    DBG(L"Monitor work=[" << mi.rcWork.left << L"," << mi.rcWork.top
         << L"," << mi.rcWork.right << L"," << mi.rcWork.bottom << L"]");
+    DBG(L"Panel @ " << wx << L"," << wy << L" " << PW << L"x" << PH);
 
-    int wx = mi.rcWork.left + (mi.rcWork.right  - mi.rcWork.left - PANEL_W) / 2;
-    int wy = mi.rcWork.top  + (mi.rcWork.bottom - mi.rcWork.top  - PANEL_H) / 2;
-    DBG(L"Panel position: x=" << wx << L" y=" << wy << L" w=" << PANEL_W << L" h=" << PANEL_H);
-
-    SetLastError(0);
     m_hwndPanel = CreateWindowExW(
         WS_EX_TOPMOST | WS_EX_APPWINDOW,
-        L"ControlMuxPanel",
-        L"ControlMux \u2014 Control Center",
+        L"ControlMuxPanel", L"ControlMux \u2014 Control Center",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
-        wx, wy, PANEL_W, PANEL_H,
-        NULL, NULL, m_hInstance, this);
+        wx, wy, PW, PH, NULL, NULL, m_hInstance, this);
 
-    DBG(L"CreateWindowExW: hwnd=" << (ULONG_PTR)m_hwndPanel << L" err=" << GetLastError());
+    DBG(L"CreateWindowExW: " << (ULONG_PTR)m_hwndPanel << L" err=" << GetLastError());
 
     if (m_hwndPanel) {
-        // Force the window visible even if this process doesn't currently own foreground focus.
-        // Windows blocks SetForegroundWindow for background processes, so we use multiple techniques.
         ShowWindow(m_hwndPanel, SW_SHOWNORMAL);
         UpdateWindow(m_hwndPanel);
-
-        // Force to top of z-order
-        SetWindowPos(m_hwndPanel, HWND_TOPMOST,
-                     wx, wy, PANEL_W, PANEL_H,
+        SetWindowPos(m_hwndPanel, HWND_TOPMOST, wx, wy, PW, PH,
                      SWP_SHOWWINDOW | SWP_NOACTIVATE);
-
-        // Grant ourselves foreground permission then claim it
         AllowSetForegroundWindow(GetCurrentProcessId());
         SwitchToThisWindow(m_hwndPanel, TRUE);
         SetForegroundWindow(m_hwndPanel);
         BringWindowToTop(m_hwndPanel);
-
-        DBG(L"Panel shown and forced to front.");
-    } else {
-        DBG(L"ERROR: CreateWindowExW returned NULL");
+        DBG(L"Panel shown OK.");
     }
 }
 
-void GuiWin32::ShowContextMenu(HWND /*hwnd*/) {
-    OpenControlPanel();  // Just open panel on tray click too
-}
-
-void GuiWin32::OpenPairingWindow(HINSTANCE /*hInstance*/) {
-    OpenControlPanel();
-}
+void GuiWin32::ShowContextMenu(HWND) { OpenControlPanel(); }
+void GuiWin32::OpenPairingWindow(HINSTANCE) { OpenControlPanel(); }
 
 void GuiWin32::UpdateTrayTooltip() {
     if (!m_tray_added) return;
-    std::wstring s = L"ControlMux — ";
+    std::wstring s = L"ControlMux \u2014 ";
     s += m_config.enabled ? L"Active" : L"Paused";
     wcscpy_s(m_nid.szTip, s.c_str());
     m_nid.uFlags = NIF_TIP;

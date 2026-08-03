@@ -1,6 +1,6 @@
 /**
  * @file gui_win32.hpp
- * @brief ControlMux floating control panel window + optional system tray icon.
+ * @brief ControlMux floating Control Center — supports 1 to 16 persons.
  */
 
 #ifndef CONTROLMUX_GUI_WIN32_HPP
@@ -12,32 +12,33 @@
 #include "focus_router.hpp"
 #include "config.hpp"
 
-#define WM_TRAYICON          (WM_USER + 1)
-#define ID_TRAY_TOGGLE_ENABLE 1001
-#define ID_TRAY_MODE_SWITCHED 1002
-#define ID_TRAY_MODE_DIRECT   1003
-#define ID_TRAY_PAIR_WIZARD   1004
-#define ID_TRAY_EXIT          1005
-#define TIMER_TRAY_RETRY      2001
+#define WM_TRAYICON           (WM_USER + 1)
+#define ID_TRAY_TOGGLE_ENABLE  1001
+#define ID_TRAY_MODE_SWITCHED  1002
+#define ID_TRAY_MODE_DIRECT    1003
+#define ID_TRAY_PAIR_WIZARD    1004
+#define ID_TRAY_EXIT           1005
+
+
 
 class GuiWin32 {
 public:
     GuiWin32(DeviceManager& dev_mgr, FocusRouter& router, AppConfig& config);
     ~GuiWin32();
 
-    /** @brief Initialises tray (if Explorer is available) and shows control panel. */
+    /** @brief Initializes GUI and opens Control Center panel. */
     bool Initialize(HINSTANCE hInstance, HWND hwndMsg);
 
-    /** @brief Opens / focuses the floating control panel window. */
+    /** @brief Opens / focuses the floating Control Center window. */
     void OpenControlPanel();
 
-    /** @brief Displays right-click tray context menu (or opens panel). */
+    /** @brief Opens panel (tray callback / compatibility alias). */
     void ShowContextMenu(HWND hwnd);
 
-    /** @brief Opens control panel (compatibility alias). */
+    /** @brief Opens panel (compatibility alias). */
     void OpenPairingWindow(HINSTANCE hInstance);
 
-    /** @brief Updates tray tooltip text. */
+    /** @brief Updates tray tooltip text (no-op if tray unavailable). */
     void UpdateTrayTooltip();
 
     /** @brief Removes tray icon on shutdown. */
@@ -45,10 +46,11 @@ public:
 
     static GuiWin32* s_gui_instance;
 
-    // Exposed so MainWndProc can forward WM_TRAYICON
     DeviceManager& m_dev_mgr;
     FocusRouter&   m_router;
     AppConfig&     m_config;
+
+    int m_scroll_offset = 0;  ///< First visible person index in the list
 
 private:
     static LRESULT CALLBACK PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
@@ -58,7 +60,6 @@ private:
     HINSTANCE       m_hInstance  = NULL;
     NOTIFYICONDATAW m_nid        = {};
     bool            m_tray_added = false;
-    bool            m_tray_available = false;
 };
 
 #endif // CONTROLMUX_GUI_WIN32_HPP
