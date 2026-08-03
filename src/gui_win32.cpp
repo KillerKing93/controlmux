@@ -1,14 +1,194 @@
 /**
  * @file gui_win32.cpp
- * @brief Implementation of system tray icon, context menu events, and pairing UI.
+ * @brief Implementation of ControlMux GUI: floating control panel window
+ *        (system tray is skipped if Shell_TrayWnd is not available).
  */
 
 #include "gui_win32.hpp"
-#include <thread>
-#include <chrono>
+#include <string>
+#include <sstream>
 
 GuiWin32* GuiWin32::s_gui_instance = nullptr;
 
+// ── colours ────────────────────────────────────────────────────────────────
+static const COLORREF CLR_BG       = RGB(15,  17,  26);   // near-black navy
+static const COLORREF CLR_ACCENT   = RGB(0,  200, 255);   // cyan
+static const COLORREF CLR_TEXT     = RGB(220, 225, 240);  // light grey
+static const COLORREF CLR_GREEN    = RGB(0,  220, 120);
+static const COLORREF CLR_RED      = RGB(255,  60,  80);
+static const COLORREF CLR_BTN      = RGB(30,  34,  50);
+static const COLORREF CLR_BTN_HOV  = RGB(0,  170, 210);
+static const int      PANEL_W      = 380;
+static const int      PANEL_H      = 280;
+
+// ── button IDs ─────────────────────────────────────────────────────────────
+#define BTN_TOGGLE   100
+#define BTN_MODE     101
+#define BTN_EXIT     102
+
+// ── helpers ────────────────────────────────────────────────────────────────
+static HFONT MakeFont(int sz, bool bold = false) {
+    return CreateFontW(sz, 0, 0, 0, bold ? FW_BOLD : FW_NORMAL,
+                       FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                       CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_SWISS,
+                       L"Segoe UI");
+}
+
+// ── window procedure ───────────────────────────────────────────────────────
+LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
+    GuiWin32* self = reinterpret_cast<GuiWin32*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+
+    switch (msg) {
+    case WM_CREATE: {
+        CREATESTRUCTW* cs = reinterpret_cast<CREATESTRUCTW*>(lp);
+        SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)cs->lpCreateParams);
+        self = reinterpret_cast<GuiWin32*>(cs->lpCreateParams);
+
+        // Buttons
+        HFONT fBtn = MakeFont(13, true);
+        HWND hToggle = CreateWindowExW(0, L"BUTTON", L"Toggle Enable/Pause",
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            20, 160, 160, 34, hwnd, (HMENU)BTN_TOGGLE, cs->hInstance, NULL);
+        SendMessageW(hToggle, WM_SETFONT, (WPARAM)fBtn, TRUE);
+
+        HWND hMode = CreateWindowExW(0, L"BUTTON", L"Switch Mode",
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            195, 160, 160, 34, hwnd, (HMENU)BTN_MODE, cs->hInstance, NULL);
+        SendMessageW(hMode, WM_SETFONT, (WPARAM)fBtn, TRUE);
+
+        HWND hExit = CreateWindowExW(0, L"BUTTON", L"Exit ControlMux",
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            20, 210, 335, 34, hwnd, (HMENU)BTN_EXIT, cs->hInstance, NULL);
+        SendMessageW(hExit, WM_SETFONT, (WPARAM)fBtn, TRUE);
+
+        return 0;
+    }
+
+    case WM_ERASEBKGND: {
+        HDC hdc = (HDC)wp;
+        RECT rc; GetClientRect(hwnd, &rc);
+        HBRUSH br = CreateSolidBrush(CLR_BG);
+        FillRect(hdc, &rc, br);
+        DeleteObject(br);
+        return 1;
+    }
+
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        SetBkMode(hdc, TRANSPARENT);
+
+        RECT rc; GetClientRect(hwnd, &rc);
+
+        // Background
+        HBRUSH brBg = CreateSolidBrush(CLR_BG);
+        FillRect(hdc, &rc, brBg);
+        DeleteObject(brBg);
+
+        // Accent top bar
+        RECT topBar = {0, 0, rc.right, 4};
+        HBRUSH brAccent = CreateSolidBrush(CLR_ACCENT);
+        FillRect(hdc, &topBar, brAccent);
+        DeleteObject(brAccent);
+
+        // Title
+        HFONT fTitle = MakeFont(20, true);
+        HFONT fOld   = (HFONT)SelectObject(hdc, fTitle);
+        SetTextColor(hdc, CLR_ACCENT);
+        RECT rcTitle = {20, 14, rc.right - 20, 50};
+        DrawTextW(hdc, L"ControlMux", -1, &rcTitle, DT_LEFT | DT_SINGLELINE);
+
+        // Sub-title
+        HFONT fSub = MakeFont(11);
+        SelectObject(hdc, fSub);
+        SetTextColor(hdc, CLR_TEXT);
+        RECT rcSub = {20, 42, rc.right - 20, 66};
+        DrawTextW(hdc, L"Multi-Person Input Engine  v1.0.0", -1, &rcSub, DT_LEFT | DT_SINGLELINE);
+
+        // Separator
+        HPEN pen = CreatePen(PS_SOLID, 1, CLR_BTN);
+        HPEN penOld = (HPEN)SelectObject(hdc, pen);
+        MoveToEx(hdc, 20, 68, NULL);
+        LineTo(hdc, rc.right - 20, 68);
+        SelectObject(hdc, penOld);
+        DeleteObject(pen);
+
+        // Status row
+        if (self) {
+            HFONT fLabel = MakeFont(12, true);
+            SelectObject(hdc, fLabel);
+
+            // Status
+            bool en = self->m_config.enabled;
+            SetTextColor(hdc, en ? CLR_GREEN : CLR_RED);
+            RECT rcSt = {20, 80, 200, 106};
+            DrawTextW(hdc, en ? L"\u25CF  ACTIVE" : L"\u25CF  PAUSED", -1, &rcSt, DT_LEFT | DT_SINGLELINE);
+
+            // Mode
+            SetTextColor(hdc, CLR_TEXT);
+            RECT rcMd = {20, 108, rc.right - 20, 132};
+            bool sf = (self->m_config.mode == RoutingMode::SwitchedFocus);
+            std::wstring modeStr = std::wstring(L"Mode:  ") + (sf ? L"Switched Focus" : L"Direct Target");
+            DrawTextW(hdc, modeStr.c_str(), -1, &rcMd, DT_LEFT | DT_SINGLELINE);
+
+            // Person count
+            RECT rcPc = {20, 130, rc.right - 20, 154};
+            std::wstring pcStr = L"Profiles:  " + std::to_wstring(self->m_config.persons.size()) + L" person(s) configured";
+            DrawTextW(hdc, pcStr.c_str(), -1, &rcPc, DT_LEFT | DT_SINGLELINE);
+
+            DeleteObject(fLabel);
+        }
+
+        SelectObject(hdc, fOld);
+        DeleteObject(fTitle);
+        DeleteObject(fSub);
+
+        // Footer
+        HFONT fFt = MakeFont(10);
+        SelectObject(hdc, fFt);
+        SetTextColor(hdc, RGB(80, 90, 110));
+        RECT rcFt = {0, rc.bottom - 22, rc.right, rc.bottom - 4};
+        DrawTextW(hdc, L"Alif Nurhidayat \u00a9 2024  |  alifnurhidayatwork@gmail.com",
+                  -1, &rcFt, DT_CENTER | DT_SINGLELINE);
+        DeleteObject(fFt);
+
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+
+    case WM_COMMAND:
+        if (!self) break;
+        switch (LOWORD(wp)) {
+        case BTN_TOGGLE:
+            self->m_config.enabled = !self->m_config.enabled;
+            ConfigManager::Save(L"controlmux_config.ini", self->m_config);
+            InvalidateRect(hwnd, NULL, TRUE);
+            break;
+        case BTN_MODE:
+            self->m_config.mode = (self->m_config.mode == RoutingMode::SwitchedFocus)
+                                  ? RoutingMode::DirectTarget
+                                  : RoutingMode::SwitchedFocus;
+            ConfigManager::Save(L"controlmux_config.ini", self->m_config);
+            InvalidateRect(hwnd, NULL, TRUE);
+            break;
+        case BTN_EXIT:
+            DestroyWindow(hwnd);
+            break;
+        }
+        return 0;
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        return 0;
+
+    default:
+        return DefWindowProcW(hwnd, msg, wp, lp);
+    }
+    return 0;
+}
+
+// ── public interface ───────────────────────────────────────────────────────
 GuiWin32::GuiWin32(DeviceManager& dev_mgr, FocusRouter& router, AppConfig& config)
     : m_dev_mgr(dev_mgr), m_router(router), m_config(config) {
     s_gui_instance = this;
@@ -18,164 +198,100 @@ GuiWin32::~GuiWin32() {
     Shutdown();
 }
 
-/**
- * Registers system tray icon. Schedules async retry via WM_APP+101
- * if Explorer tray host is not yet ready (returns E_FAIL / error 0x80004005).
- * This never blocks the calling thread.
- */
-bool GuiWin32::Initialize(HINSTANCE hInstance, HWND hwndMain) {
-    m_hwndMain  = hwndMain;
+bool GuiWin32::Initialize(HINSTANCE hInstance, HWND hwndMsg) {
+    m_hwndMsg   = hwndMsg;
     m_hInstance = hInstance;
 
-    // Load icon: try embedded resource, then file, then system fallback
-    m_hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(101));
-    if (!m_hIcon) {
-        m_hIcon = (HICON)LoadImageW(NULL, L"assets/app_icon.ico",
-                                    IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
-    }
-    if (!m_hIcon) {
-        m_hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    // ── Try system tray first (only if Explorer taskbar exists) ──
+    HWND hTray = FindWindowW(L"Shell_TrayWnd", NULL);
+    if (hTray) {
+        m_tray_available = true;
+        HICON hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(101));
+        if (!hIcon) hIcon = (HICON)LoadImageW(NULL, L"assets/app_icon.ico",
+                                               IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
+        if (!hIcon) hIcon = LoadIcon(NULL, IDI_APPLICATION);
+
+        ZeroMemory(&m_nid, sizeof(m_nid));
+        m_nid.cbSize           = sizeof(NOTIFYICONDATAW);
+        m_nid.hWnd             = hwndMsg;
+        m_nid.uID              = 1;
+        m_nid.uFlags           = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+        m_nid.uCallbackMessage = WM_TRAYICON;
+        m_nid.hIcon            = hIcon;
+        wcscpy_s(m_nid.szTip, L"ControlMux — Multi-Person Input Engine");
+
+        if (Shell_NotifyIconW(NIM_ADD, &m_nid)) {
+            m_tray_added = true;
+        }
     }
 
-    BuildNid();
-    TryAddTrayIcon();   // First attempt; schedules async retry if Shell not ready
+    // ── Always open control panel window ──
+    OpenControlPanel();
     return true;
 }
 
-void GuiWin32::BuildNid() {
-    ZeroMemory(&m_nid, sizeof(m_nid));
-    m_nid.cbSize           = sizeof(NOTIFYICONDATAW);
-    m_nid.hWnd             = m_hwndMain;
-    m_nid.uID              = 1;
-    m_nid.uFlags           = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-    m_nid.uCallbackMessage = WM_TRAYICON;
-    m_nid.hIcon            = m_hIcon;
-    wcscpy_s(m_nid.szTip, L"ControlMux \u2014 Multi-Person Input Engine");
-}
-
-void GuiWin32::TryAddTrayIcon() {
-    if (Shell_NotifyIconW(NIM_ADD, &m_nid)) {
-        m_tray_added = true;
+void GuiWin32::OpenControlPanel() {
+    if (m_hwndPanel && IsWindow(m_hwndPanel)) {
+        SetForegroundWindow(m_hwndPanel);
         return;
     }
-    // Explorer shell not ready yet \u2014 schedule another attempt in 500 ms via
-    // a WM_APP+101 message pumped through the main window message loop.
-    if (m_hwndMain) {
-        SetTimer(m_hwndMain, TIMER_TRAY_RETRY, 500, NULL);
+
+    // Register panel class if not done yet
+    WNDCLASSEXW wc = {};
+    wc.cbSize        = sizeof(wc);
+    wc.lpfnWndProc   = PanelWndProc;
+    wc.hInstance     = m_hInstance;
+    wc.hbrBackground = CreateSolidBrush(CLR_BG);
+    wc.lpszClassName = L"ControlMuxPanel";
+    wc.hIcon         = LoadIcon(m_hInstance, MAKEINTRESOURCE(101));
+    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    RegisterClassExW(&wc); // OK if already registered
+
+    // Centre on the primary monitor's work area (not SM_CXSCREEN which can be wrong on multi-monitor)
+    POINT ptPrimary = {1, 1};  // a point guaranteed on the primary monitor
+    HMONITOR hMon = MonitorFromPoint(ptPrimary, MONITOR_DEFAULTTOPRIMARY);
+    MONITORINFO mi = {};
+    mi.cbSize = sizeof(mi);
+    GetMonitorInfoW(hMon, &mi);
+    int wx = mi.rcWork.left + (mi.rcWork.right  - mi.rcWork.left - PANEL_W) / 2;
+    int wy = mi.rcWork.top  + (mi.rcWork.bottom - mi.rcWork.top  - PANEL_H) / 2;
+
+    m_hwndPanel = CreateWindowExW(
+        WS_EX_TOPMOST | WS_EX_APPWINDOW,
+        L"ControlMuxPanel",
+        L"ControlMux — Control Center",
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+        wx, wy, PANEL_W, PANEL_H,
+        NULL, NULL, m_hInstance, this);  // pass 'this' as lpParam
+
+    if (m_hwndPanel) {
+        ShowWindow(m_hwndPanel, SW_SHOW);
+        UpdateWindow(m_hwndPanel);
+        SetForegroundWindow(m_hwndPanel);
     }
 }
 
-/**
- * Called from MainWndProc when WM_TIMER fires with TIMER_TRAY_RETRY ID.
- */
-void GuiWin32::OnTrayRetryTimer() {
-    KillTimer(m_hwndMain, TIMER_TRAY_RETRY);
-    if (m_tray_added) return;  // already succeeded on a previous attempt
-    TryAddTrayIcon();
+void GuiWin32::ShowContextMenu(HWND /*hwnd*/) {
+    OpenControlPanel();  // Just open panel on tray click too
 }
 
-/**
- * Dynamically updates tray tooltip with active status and mode.
- */
+void GuiWin32::OpenPairingWindow(HINSTANCE /*hInstance*/) {
+    OpenControlPanel();
+}
+
 void GuiWin32::UpdateTrayTooltip() {
     if (!m_tray_added) return;
-    std::wstring status = L"ControlMux \u2014 ";
-    status += m_config.enabled ? L"Active (" : L"Paused (";
-    status += (m_config.mode == RoutingMode::SwitchedFocus
-               ? L"Switched Focus)" : L"Direct Target)");
-    wcscpy_s(m_nid.szTip, status.c_str());
+    std::wstring s = L"ControlMux — ";
+    s += m_config.enabled ? L"Active" : L"Paused";
+    wcscpy_s(m_nid.szTip, s.c_str());
     m_nid.uFlags = NIF_TIP;
     Shell_NotifyIconW(NIM_MODIFY, &m_nid);
     m_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
 }
 
-/**
- * Displays popup menu on right-click on tray icon.
- */
-void GuiWin32::ShowContextMenu(HWND hwnd) {
-    POINT pt;
-    GetCursorPos(&pt);
-
-    HMENU hMenu = CreatePopupMenu();
-
-    AppendMenuW(hMenu, MF_STRING | (m_config.enabled ? MF_CHECKED : MF_UNCHECKED),
-                ID_TRAY_TOGGLE_ENABLE,
-                m_config.enabled ? L"\u2714 ControlMux Enabled" : L"ControlMux Paused");
-    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-
-    AppendMenuW(hMenu,
-                MF_STRING | (m_config.mode == RoutingMode::SwitchedFocus ? MF_CHECKED : MF_UNCHECKED),
-                ID_TRAY_MODE_SWITCHED, L"Mode: Switched Focus");
-    AppendMenuW(hMenu,
-                MF_STRING | (m_config.mode == RoutingMode::DirectTarget ? MF_CHECKED : MF_UNCHECKED),
-                ID_TRAY_MODE_DIRECT, L"Mode: Direct Window Target");
-
-    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenuW(hMenu, MF_STRING, ID_TRAY_PAIR_WIZARD, L"Control Center...");
-    AppendMenuW(hMenu, MF_SEPARATOR, 0, NULL);
-    AppendMenuW(hMenu, MF_STRING, ID_TRAY_EXIT, L"Exit ControlMux");
-
-    SetForegroundWindow(hwnd);
-    int cmd = TrackPopupMenu(hMenu, TPM_RETURNCMD | TPM_NONOTIFY | TPM_RIGHTBUTTON,
-                             pt.x, pt.y, 0, hwnd, NULL);
-    DestroyMenu(hMenu);
-
-    switch (cmd) {
-    case ID_TRAY_TOGGLE_ENABLE:
-        m_config.enabled = !m_config.enabled;
-        UpdateTrayTooltip();
-        ConfigManager::Save(L"controlmux_config.ini", m_config);
-        break;
-    case ID_TRAY_MODE_SWITCHED:
-        m_config.mode = RoutingMode::SwitchedFocus;
-        UpdateTrayTooltip();
-        ConfigManager::Save(L"controlmux_config.ini", m_config);
-        break;
-    case ID_TRAY_MODE_DIRECT:
-        m_config.mode = RoutingMode::DirectTarget;
-        UpdateTrayTooltip();
-        ConfigManager::Save(L"controlmux_config.ini", m_config);
-        break;
-    case ID_TRAY_PAIR_WIZARD:
-        OpenPairingWindow(GetModuleHandle(NULL));
-        break;
-    case ID_TRAY_EXIT:
-        Shutdown();
-        PostQuitMessage(0);
-        break;
-    }
-}
-
-/**
- * Displays Control Center status dialog.
- */
-void GuiWin32::OpenPairingWindow(HINSTANCE /*hInstance*/) {
-    std::wstring msg = L"ControlMux Multi-Person Input Engine v1.0.0\n";
-    msg += L"Created by Alif Nurhidayat (alifnurhidayatwork@gmail.com)\n\n";
-    msg += L"Status: ";
-    msg += (m_config.enabled ? L"ACTIVE \u2714" : L"PAUSED \u23f8");
-    msg += L"\nRouting Mode: ";
-    msg += (m_config.mode == RoutingMode::SwitchedFocus
-            ? L"Switched Focus" : L"Direct Target");
-    msg += L"\n\nConfigured Profiles:\n";
-    for (const auto& p : m_config.persons) {
-        msg += L"  \u2022 " + p.name + L":\n";
-        msg += L"      Mouse:    " + (p.mouse_hwid.empty()
-               ? L"(Auto-assigned)" : p.mouse_hwid) + L"\n";
-        msg += L"      Keyboard: " + (p.keyboard_hwid.empty()
-               ? L"(Auto-assigned)" : p.keyboard_hwid) + L"\n";
-    }
-    msg += L"\nControlMux is active in your system tray (bottom-right corner).\n";
-    msg += L"Right-click the tray icon to switch modes, toggle, or exit.";
-
-    MessageBoxW(NULL, msg.c_str(), L"ControlMux Control Center",
-                MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND | MB_TOPMOST);
-}
-
 void GuiWin32::Shutdown() {
-    if (m_tray_added && m_nid.hWnd) {
+    if (m_tray_added) {
         Shell_NotifyIconW(NIM_DELETE, &m_nid);
         m_tray_added = false;
-        m_nid.hWnd   = NULL;
     }
 }

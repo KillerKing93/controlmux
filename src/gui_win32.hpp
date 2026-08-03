@@ -1,6 +1,6 @@
 /**
  * @file gui_win32.hpp
- * @brief Native Windows System Tray icon management and device pairing dialog interface.
+ * @brief ControlMux floating control panel window + optional system tray icon.
  */
 
 #ifndef CONTROLMUX_GUI_WIN32_HPP
@@ -12,7 +12,6 @@
 #include "focus_router.hpp"
 #include "config.hpp"
 
-// System Tray Notification Constants
 #define WM_TRAYICON          (WM_USER + 1)
 #define ID_TRAY_TOGGLE_ENABLE 1001
 #define ID_TRAY_MODE_SWITCHED 1002
@@ -21,47 +20,45 @@
 #define ID_TRAY_EXIT          1005
 #define TIMER_TRAY_RETRY      2001
 
-/**
- * @brief Manages the Win32 system tray notification icon, context menus, and configuration popups.
- */
 class GuiWin32 {
 public:
     GuiWin32(DeviceManager& dev_mgr, FocusRouter& router, AppConfig& config);
     ~GuiWin32();
 
-    /** @brief Adds the notification icon to the Windows taskbar system tray (non-blocking). */
-    bool Initialize(HINSTANCE hInstance, HWND hwndMain);
+    /** @brief Initialises tray (if Explorer is available) and shows control panel. */
+    bool Initialize(HINSTANCE hInstance, HWND hwndMsg);
 
-    /** @brief Called when TIMER_TRAY_RETRY fires — retries Shell_NotifyIconW. */
-    void OnTrayRetryTimer();
+    /** @brief Opens / focuses the floating control panel window. */
+    void OpenControlPanel();
 
-    /** @brief Displays the right-click system tray context menu. */
+    /** @brief Displays right-click tray context menu (or opens panel). */
     void ShowContextMenu(HWND hwnd);
 
-    /** @brief Opens the Control Center status dialog. */
+    /** @brief Opens control panel (compatibility alias). */
     void OpenPairingWindow(HINSTANCE hInstance);
 
-    /** @brief Updates the system tray tooltip with current active mode status. */
+    /** @brief Updates tray tooltip text. */
     void UpdateTrayTooltip();
 
-    /** @brief Removes system tray icon on shutdown. */
+    /** @brief Removes tray icon on shutdown. */
     void Shutdown();
 
     static GuiWin32* s_gui_instance;
 
-private:
-    void BuildNid();
-    void TryAddTrayIcon();
-
+    // Exposed so MainWndProc can forward WM_TRAYICON
     DeviceManager& m_dev_mgr;
     FocusRouter&   m_router;
     AppConfig&     m_config;
 
-    HWND            m_hwndMain  = NULL;
-    HINSTANCE       m_hInstance = NULL;
-    HICON           m_hIcon     = NULL;
-    NOTIFYICONDATAW m_nid       = { 0 };
+private:
+    static LRESULT CALLBACK PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
+
+    HWND            m_hwndMsg    = NULL;
+    HWND            m_hwndPanel  = NULL;
+    HINSTANCE       m_hInstance  = NULL;
+    NOTIFYICONDATAW m_nid        = {};
     bool            m_tray_added = false;
+    bool            m_tray_available = false;
 };
 
 #endif // CONTROLMUX_GUI_WIN32_HPP
