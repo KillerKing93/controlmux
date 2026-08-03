@@ -1,24 +1,29 @@
-# ControlMux Layered Logo Source
+# ControlMux Modular Layered Logo Assets
 
-This folder contains the **modular layer source files** for the ControlMux logo graphics.
-
-## 🎨 Layer Structure Overview
-
-The logo is divided into 5 independent vector graphic layers:
-
-1. **`01_background.svg`**: Dark radial tech background gradient with subtle desktop grid lines.
-2. **`02_circuit_grid.svg`**: Multiplexer central core node, orbital rings, and glowing connection paths.
-3. **`03_cyan_cursor.svg`**: Person 1 cyan pointer arrow cursor and `PERSON 1` badge pill tag.
-4. **`04_magenta_cursor.svg`**: Person 2 magenta pointer arrow cursor and `PERSON 2` badge pill tag.
-5. **`05_typography.svg`**: ControlMux brand title typography and author credit (`By Alif Nurhidayat`).
+The ControlMux logo graphics are built using a **multi-layer asset system** so you can freely edit, swap, or tweak any layer in **Photoshop, GIMP, Figma, Illustrator, or Canva**.
 
 ---
 
-## 🖌️ How to Edit in Graphics Software
+## 📂 Layer File Manifest
 
-### Photoshop / Illustrator / GIMP / Inkscape
-1. Open **[assets/logo.svg](file:///d:/CraftThingy/controlmux/assets/logo.svg)** directly. All groups (`<g id="layer-01-background">`, `<g id="layer-03-cyan-cursor">`, etc.) will display as native editable layers in your layer panel.
-2. Or import the individual files from `assets/logo_layers/` onto separate canvas layers.
+The logo consists of **5 independent transparent PNG layers** inside `assets/logo_layers/`:
 
-### Figma / Canva
-Drag and drop `assets/logo.svg` or any layer SVG into your workspace to tweak colors, fonts, or cursor angles freely!
+| Layer File | Layer Name | Description |
+| :--- | :--- | :--- |
+| **`01_background.png`** | Background | Dark radial gradient with desktop grid lines |
+| **`02_circuit_core.png`** | Circuit & Core | Multiplexer core, orbital rings & connection wires |
+| **`03_cyan_cursor.png`** | Person 1 Cursor | 3D Neon Cyan pointer cursor & `PERSON 1` badge |
+| **`04_magenta_cursor.png`** | Person 2 Cursor | 3D Neon Magenta pointer cursor & `PERSON 2` badge |
+| **`05_typography.png`** | Brand & Typography | ControlMux title text & author attribution |
+
+---
+
+## 🛠️ How to Edit in Photoshop / GIMP / Canva / Figma
+
+1. **Photoshop / GIMP / Canva**: Drag and drop all 5 PNG files from `assets/logo_layers/` onto a single canvas in order (1 at the bottom to 5 at the top).
+2. **Vector SVG Source**: You can also open **`assets/logo.svg`** directly in **Adobe Illustrator / Inkscape / Figma**, where all elements are grouped as editable layers (`<g id="layer-01-background">`, etc.).
+3. **Rebuilding `logo.png`**: After making any edits to individual layer files, simply run:
+   ```bash
+   python assets/merge_logo.py
+   ```
+   This will automatically re-composite all layers and update **`assets/logo.png`**!
