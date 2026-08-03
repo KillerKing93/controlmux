@@ -1,0 +1,32 @@
+# Makefile for Linux (Arch Linux, Debian, CachyOS, SteamOS, Fedora, Ubuntu, openSUSE)
+CXX = g++
+CXXFLAGS = -O2 -std=c++17 -Wall -Wextra -Wno-unused-parameter
+
+INCLUDES = $(shell pkg-config --cflags x11 libevdev cairo 2>/dev/null || echo "-I/usr/include/libevdev-1.0 -I/usr/include/cairo")
+LIBS = $(shell pkg-config --libs x11 libevdev cairo 2>/dev/null || echo "-lX11 -lXext -lXfixes -lEVDEV -lcairo -lpthread")
+
+TARGET = controlmux
+
+SRCS = src/main.cpp \
+       src/config.cpp \
+       src/device_manager_linux.cpp \
+       src/overlay_renderer.cpp \
+       src/focus_router.cpp \
+       src/input_engine.cpp \
+       src/gui_win32.cpp
+
+OBJS = $(SRCS:.cpp=.o)
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
+	@echo "Build complete for Linux: $(TARGET)"
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+
+clean:
+	rm -f src/*.o $(TARGET)
+
+.PHONY: all clean
