@@ -5,7 +5,7 @@
       <feMerge><feMergeNode in="blur1" /><feMergeNode in="blur2" /><feMergeNode in="SourceGraphic" /></feMerge>
     </filter>
     <filter id="drop-shadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="4" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.8" />
+      <feDropShadow dx="4" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.85" />
     </filter>
     <linearGradient id="magenta-grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FF0844" />
@@ -16,13 +16,13 @@
   <!-- LAYER 4: PERSON 2 MAGENTA CURSOR -->
   <g id="layer-04-magenta-cursor" filter="url(#drop-shadow)">
     <g filter="url(#glow-magenta)">
-      <polygon points="710,110 685,230 665,200 630,250 610,230 645,180 605,180" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
-      <polyline points="704,120 684,215 670,192" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
+      <polygon points="700,150 675,270 655,240 620,290 600,270 635,220 595,220" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+      <polyline points="694,160 674,255 660,232" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
     </g>
     <g>
-      <rect x="680" y="85" width="100" height="30" rx="6" fill="#280a16" fill-opacity="0.85" stroke="#FF0844" stroke-width="2" />
-      <circle cx="698" cy="100" r="5" fill="#FF0844" filter="url(#glow-magenta)" />
-      <text x="742" y="120" font-family="'Segoe UI', 'Inter', sans-serif" font-size="12" font-weight="800" letter-spacing="1" fill="#ffffff" text-anchor="middle">PERSON 2</text>
+      <rect x="665" y="75" width="140" height="42" rx="10" fill="#240712" fill-opacity="0.95" stroke="#FF0844" stroke-width="2" />
+      <circle cx="688" cy="96" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
+      <text x="746" y="101" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 2</text>
     </g>
   </g>
 </svg>

@@ -2,31 +2,35 @@
   <defs>
     <!-- Background Gradient -->
     <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#070914" />
-      <stop offset="40%" stop-color="#0e1328" />
+      <stop offset="0%" stop-color="#050711" />
+      <stop offset="35%" stop-color="#0b1024" />
       <stop offset="70%" stop-color="#141a38" />
-      <stop offset="100%" stop-color="#04050a" />
+      <stop offset="100%" stop-color="#030408" />
     </linearGradient>
 
-    <!-- Subtle Clean Glow Filters -->
-    <filter id="glow-soft-cyan" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
+    <!-- Intense Neon Glow Filters -->
+    <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur1" />
+      <feGaussianBlur stdDeviation="3" result="blur2" />
       <feMerge>
-        <feMergeNode in="blur" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="blur2" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
 
-    <filter id="glow-soft-magenta" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur" />
+    <filter id="glow-magenta" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur1" />
+      <feGaussianBlur stdDeviation="3" result="blur2" />
       <feMerge>
-        <feMergeNode in="blur" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="blur2" />
         <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
 
     <filter id="drop-shadow" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="3" dy="6" stdDeviation="4" flood-color="#000000" flood-opacity="0.7" />
+      <feDropShadow dx="4" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.85" />
     </filter>
 
     <!-- Cursor Gradients -->
@@ -48,6 +52,12 @@
       <stop offset="50%" stop-color="#7F00FF" />
       <stop offset="100%" stop-color="#FF0844" />
     </linearGradient>
+
+    <radialGradient id="plasma-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.55" />
+      <stop offset="45%" stop-color="#7F00FF" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
   </defs>
 
   <!-- LAYER 1: BACKGROUND -->
@@ -55,77 +65,80 @@
     <!-- Canvas Base -->
     <rect width="960" height="600" rx="20" fill="url(#bg-grad)" />
 
+    <!-- Ambient Plasma Glow in Center -->
+    <circle cx="480" cy="235" r="270" fill="url(#plasma-glow)" />
+
     <!-- Tech Grid Overlay -->
-    <path d="M 0,120 L 960,120 M 0,240 L 960,240 M 0,360 L 960,360 M 0,480 L 960,480" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
-    <path d="M 192,0 L 192,600 M 384,0 L 384,600 M 576,0 L 576,600 M 768,0 L 768,600" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
+    <path d="M 0,120 L 960,120 M 0,240 L 960,240 M 0,360 L 960,360 M 0,480 L 960,480" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
+    <path d="M 192,0 L 192,600 M 384,0 L 384,600 M 576,0 L 576,600 M 768,0 L 768,600" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
   </g>
 
   <!-- LAYER 2: CIRCUIT NODES & MULTIPLEXER CORE -->
   <g id="layer-02-circuit-core">
     <!-- Outer Orbital Energy Rings -->
-    <circle cx="480" cy="230" r="125" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.3" stroke-dasharray="12 8" />
-    <circle cx="480" cy="230" r="90" fill="none" stroke="#00F2FE" stroke-width="1.5" stroke-opacity="0.25" stroke-dasharray="6 6" />
+    <circle cx="480" cy="235" r="125" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12 8" />
+    <circle cx="480" cy="235" r="90" fill="none" stroke="#00F2FE" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="6 6" />
 
     <!-- Cyan Input Stream from Person 1 -->
-    <path d="M 365,220 Q 400,230 444,230" stroke="#00F2FE" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#glow-soft-cyan)" />
-    <circle cx="444" cy="230" r="5" fill="#00F2FE" />
+    <path d="M 365,225 Q 400,235 444,235" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
+    <circle cx="444" cy="235" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
 
     <!-- Magenta Input Stream from Person 2 -->
-    <path d="M 595,220 Q 560,230 516,230" stroke="#FF0844" stroke-width="3" fill="none" stroke-linecap="round" filter="url(#glow-soft-magenta)" />
-    <circle cx="516" cy="230" r="5" fill="#FF0844" />
+    <path d="M 595,225 Q 560,235 516,235" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
+    <circle cx="516" cy="235" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
 
     <!-- Central Multiplexer Reactor Housing -->
-    <circle cx="480" cy="230" r="34" fill="#0b0f22" stroke="url(#core-grad)" stroke-width="3" />
-    <circle cx="480" cy="230" r="16" fill="#00F2FE" filter="url(#glow-soft-cyan)" />
+    <circle cx="480" cy="235" r="36" fill="#0c1024" stroke="url(#core-grad)" stroke-width="3.5" filter="url(#glow-cyan)" />
+    <circle cx="480" cy="235" r="18" fill="#00F2FE" filter="url(#glow-cyan)" />
   </g>
 
   <!-- LAYER 3: PERSON 1 CYAN CURSOR -->
   <g id="layer-03-cyan-cursor" filter="url(#drop-shadow)">
-    <!-- Glassmorphic Name Badge Container -->
-    <g>
-      <rect x="175" y="85" width="120" height="34" rx="8" fill="#091424" fill-opacity="0.9" stroke="#00F2FE" stroke-width="2" />
-      <circle cx="193" cy="102" r="5" fill="#00F2FE" />
-      <text x="245" y="123" font-family="'Segoe UI', 'Inter', sans-serif" font-size="12" font-weight="800" letter-spacing="1" fill="#ffffff" text-anchor="middle">PERSON 1</text>
-    </g>
-
     <!-- Cyan Cursor Geometry -->
-    <g filter="url(#glow-soft-cyan)">
+    <g filter="url(#glow-cyan)">
       <polygon points="260,150 285,270 305,240 340,290 360,270 325,220 365,220" fill="url(#cyan-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
       <polyline points="266,160 286,255 300,232" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
+    </g>
+
+    <!-- Glassmorphic Name Badge Container: Box y=75 to y=117 (height 42, width 140). Text at y=101 DEAD CENTER INSIDE BOX -->
+    <g>
+      <rect x="155" y="75" width="140" height="42" rx="10" fill="#071222" fill-opacity="0.95" stroke="#00F2FE" stroke-width="2" />
+      <circle cx="178" cy="96" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
+      <text x="236" y="101" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 1</text>
     </g>
   </g>
 
   <!-- LAYER 4: PERSON 2 MAGENTA CURSOR -->
   <g id="layer-04-magenta-cursor" filter="url(#drop-shadow)">
-    <!-- Glassmorphic Name Badge Container -->
-    <g>
-      <rect x="665" y="85" width="120" height="34" rx="8" fill="#240914" fill-opacity="0.9" stroke="#FF0844" stroke-width="2" />
-      <circle cx="683" cy="102" r="5" fill="#FF0844" />
-      <text x="735" y="123" font-family="'Segoe UI', 'Inter', sans-serif" font-size="12" font-weight="800" letter-spacing="1" fill="#ffffff" text-anchor="middle">PERSON 2</text>
-    </g>
-
     <!-- Magenta Cursor Geometry -->
-    <g filter="url(#glow-soft-magenta)">
+    <g filter="url(#glow-magenta)">
       <polygon points="700,150 675,270 655,240 620,290 600,270 635,220 595,220" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
       <polyline points="694,160 674,255 660,232" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
+    </g>
+
+    <!-- Glassmorphic Name Badge Container: Box y=75 to y=117 (height 42, width 140). Text at y=101 DEAD CENTER INSIDE BOX -->
+    <g>
+      <rect x="665" y="75" width="140" height="42" rx="10" fill="#240712" fill-opacity="0.95" stroke="#FF0844" stroke-width="2" />
+      <circle cx="688" cy="96" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
+      <text x="746" y="101" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 2</text>
     </g>
   </g>
 
   <!-- LAYER 5: TYPOGRAPHY & BRANDING -->
   <g id="layer-05-typography" filter="url(#drop-shadow)">
-    <!-- Sharp, Crisp Brand Title WITHOUT fuzzy blur filter -->
+    <!-- Epic Cyberpunk Title with Sharp Text & Neon Accent -->
     <text x="480" y="440" font-family="'Segoe UI', 'Outfit', 'Inter', sans-serif" font-size="56" font-weight="900" letter-spacing="6" fill="#ffffff" text-anchor="middle">
       CONTROL<tspan fill="#00F2FE">MUX</tspan>
     </text>
 
-    <!-- Subtitle Pill Tag -->
-    <rect x="300" y="475" width="360" height="28" rx="14" fill="#0d1124" stroke="url(#core-grad)" stroke-width="1.5" />
-    <text x="480" y="494" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#e2e8f0" text-anchor="middle">
+    <!-- Subtitle Pill Tag: Box y=470, height=32, text at y=491 -->
+    <rect x="290" y="470" width="380" height="32" rx="16" fill="#0c1024" stroke="url(#core-grad)" stroke-width="1.5" />
+    <text x="480" y="491" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" letter-spacing="2" fill="#e2e8f0" text-anchor="middle">
       MULTI-PERSON INPUT CONTROL ENGINE
     </text>
 
     <!-- Author Attribution -->
-    <text x="480" y="540" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" letter-spacing="1.5" fill="#64748b" text-anchor="middle">
+    <text x="480" y="538" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" letter-spacing="1.5" fill="#64748b" text-anchor="middle">
       BY ALIF NURHIDAYAT
     </text>
   </g>
