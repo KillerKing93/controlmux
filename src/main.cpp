@@ -35,8 +35,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         return 0;
 
     case WM_TRAYICON:
-        if (lParam == WM_RBUTTONUP || lParam == WM_LBUTTONUP) {
+        if (lParam == WM_RBUTTONUP) {
             if (g_gui) g_gui->ShowContextMenu(hwnd);
+        } else if (lParam == WM_LBUTTONUP || lParam == WM_LBUTTONDBLCLK) {
+            if (g_gui) g_gui->OpenPairingWindow(GetModuleHandle(NULL));
         }
         return 0;
 
@@ -100,6 +102,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
 
     // Initial overlay render pass
     g_renderer->Render(g_dev_mgr->GetPersons(), g_router->GetActivePersonId());
+
+    // Show startup Control Center dialog so user immediately sees ControlMux is running
+    g_gui->OpenPairingWindow(hInstance);
 
     // 6. Execute Win32 event message loop
     MSG msg;

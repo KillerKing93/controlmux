@@ -111,15 +111,19 @@ void GuiWin32::ShowContextMenu(HWND hwnd) {
  * Displays device pairing information dialog.
  */
 void GuiWin32::OpenPairingWindow(HINSTANCE hInstance) {
-    std::wstring msg = L"ControlMux Device Profiles:\n\n";
+    std::wstring msg = L"ControlMux Multi-Person Input Engine v1.0.0\n";
+    msg += L"Created by Alif Nurhidayat (alifnurhidayatwork@gmail.com)\n\n";
+    msg += L"Status: " + std::wstring(m_config.enabled ? L"ACTIVE ✔" : L"PAUSED ⏸") + L"\n";
+    msg += L"Routing Mode: " + std::wstring(m_config.mode == RoutingMode::SwitchedFocus ? L"Switched Focus" : L"Direct Target") + L"\n\n";
+    msg += L"Configured Profiles:\n";
     for (const auto& p : m_config.persons) {
-        msg += p.name + L":\n";
-        msg += L"  Mouse: " + (p.mouse_hwid.empty() ? L"(Unassigned - Auto)" : p.mouse_hwid) + L"\n";
-        msg += L"  Keyboard: " + (p.keyboard_hwid.empty() ? L"(Unassigned - Auto)" : p.keyboard_hwid) + L"\n\n";
+        msg += L"  • " + p.name + L":\n";
+        msg += L"      Mouse: " + (p.mouse_hwid.empty() ? L"(Auto / Unassigned)" : p.mouse_hwid) + L"\n";
+        msg += L"      Keyboard: " + (p.keyboard_hwid.empty() ? L"(Auto / Unassigned)" : p.keyboard_hwid) + L"\n";
     }
-    msg += L"To pair Person 1 Mouse: Click OK, then click Mouse 1.\nTo clear pairings, edit controlmux_config.ini.";
+    msg += L"\nControlMux is running in your System Tray (bottom-right area).\nRight-click tray icon to switch modes or toggle active status.";
 
-    MessageBoxW(m_hwndMain, msg.c_str(), L"ControlMux Device Profiles", MB_OK | MB_ICONINFORMATION);
+    MessageBoxW(m_hwndMain, msg.c_str(), L"ControlMux Control Center", MB_OK | MB_ICONINFORMATION);
 }
 
 void GuiWin32::Shutdown() {
