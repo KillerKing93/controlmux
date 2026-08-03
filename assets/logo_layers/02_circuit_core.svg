@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
   <defs>
     <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="8" result="blur1" /><feGaussianBlur stdDeviation="3" result="blur2" />
@@ -16,13 +16,13 @@
   </defs>
   <!-- LAYER 2: CIRCUIT NODES & MULTIPLEXER CORE -->
   <g id="layer-02-circuit-core">
-    <circle cx="480" cy="235" r="125" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12 8" />
-    <circle cx="480" cy="235" r="90" fill="none" stroke="#00F2FE" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="6 6" />
-    <path d="M 365,225 Q 400,235 444,235" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
-    <circle cx="444" cy="235" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
-    <path d="M 595,225 Q 560,235 516,235" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
-    <circle cx="516" cy="235" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
-    <circle cx="480" cy="235" r="36" fill="#0c1024" stroke="url(#core-grad)" stroke-width="3.5" filter="url(#glow-cyan)" />
-    <circle cx="480" cy="235" r="18" fill="#00F2FE" filter="url(#glow-cyan)" />
+    <circle cx="400" cy="350" r="140" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12 8" />
+    <circle cx="400" cy="350" r="95" fill="none" stroke="#00F2FE" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="6 6" />
+    <path d="M 285,340 Q 320,350 360,350" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
+    <circle cx="360" cy="350" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
+    <path d="M 515,340 Q 480,350 440,350" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
+    <circle cx="440" cy="350" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
+    <circle cx="400" cy="350" r="38" fill="#0c1024" stroke="url(#core-grad)" stroke-width="3.5" filter="url(#glow-cyan)" />
+    <circle cx="400" cy="350" r="18" fill="#00F2FE" filter="url(#glow-cyan)" />
   </g>
 </svg>

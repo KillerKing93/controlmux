@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
   <defs>
     <!-- Background Gradient -->
     <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -60,51 +60,70 @@
     </radialGradient>
   </defs>
 
-  <!-- LAYER 1: BACKGROUND -->
+  <!-- LAYER 1: BACKGROUND & FUTURISTIC EDGE BRACKETS -->
   <g id="layer-01-background">
-    <!-- Canvas Base -->
-    <rect width="960" height="600" rx="20" fill="url(#bg-grad)" />
+    <!-- Square Canvas Base -->
+    <rect width="800" height="800" rx="36" fill="url(#bg-grad)" />
 
-    <!-- Ambient Plasma Glow in Center -->
-    <circle cx="480" cy="235" r="270" fill="url(#plasma-glow)" />
+    <!-- Ambient Plasma Center Glow -->
+    <circle cx="400" cy="350" r="280" fill="url(#plasma-glow)" />
 
     <!-- Tech Grid Overlay -->
-    <path d="M 0,120 L 960,120 M 0,240 L 960,240 M 0,360 L 960,360 M 0,480 L 960,480" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
-    <path d="M 192,0 L 192,600 M 384,0 L 384,600 M 576,0 L 576,600 M 768,0 L 768,600" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
+    <path d="M 0,160 L 800,160 M 0,320 L 800,320 M 0,480 L 800,480 M 0,640 L 800,640" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
+    <path d="M 160,0 L 160,800 M 320,0 L 320,800 M 480,0 L 480,800 M 640,0 L 640,800" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
+
+    <!-- Outer Frame Edge Border -->
+    <rect x="24" y="24" width="752" height="752" rx="28" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" />
+
+    <!-- 4 Futuristic Corner Bracket Accents -->
+    <!-- Top-Left Corner Bracket -->
+    <path d="M 30,80 L 30,40 A 10,10 0 0,1 40,30 L 80,30" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
+    <!-- Top-Right Corner Bracket -->
+    <path d="M 720,30 L 760,30 A 10,10 0 0,1 770,40 L 770,80" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
+    <!-- Bottom-Left Corner Bracket -->
+    <path d="M 30,720 L 30,760 A 10,10 0 0,0 40,770 L 80,770" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
+    <!-- Bottom-Right Corner Bracket -->
+    <path d="M 720,770 L 760,770 A 10,10 0 0,0 770,760 L 770,720" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
+
+    <!-- Edge Status LED Indicators -->
+    <circle cx="400" cy="30" r="3" fill="#00F2FE" filter="url(#glow-cyan)" />
+    <circle cx="400" cy="770" r="3" fill="#FF0844" filter="url(#glow-magenta)" />
+    <circle cx="30" cy="400" r="3" fill="#7F00FF" />
+    <circle cx="770" cy="400" r="3" fill="#7F00FF" />
   </g>
 
   <!-- LAYER 2: CIRCUIT NODES & MULTIPLEXER CORE -->
   <g id="layer-02-circuit-core">
     <!-- Outer Orbital Energy Rings -->
-    <circle cx="480" cy="235" r="125" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12 8" />
-    <circle cx="480" cy="235" r="90" fill="none" stroke="#00F2FE" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="6 6" />
+    <circle cx="400" cy="350" r="140" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12 8" />
+    <circle cx="400" cy="350" r="95" fill="none" stroke="#00F2FE" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="6 6" />
 
-    <!-- Cyan Input Stream from Person 1 -->
-    <path d="M 365,225 Q 400,235 444,235" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
-    <circle cx="444" cy="235" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
+    <!-- Cyan Input Stream from Person 1 (285,340 -> 360,350) -->
+    <path d="M 285,340 Q 320,350 360,350" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
+    <circle cx="360" cy="350" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
 
-    <!-- Magenta Input Stream from Person 2 -->
-    <path d="M 595,225 Q 560,235 516,235" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
-    <circle cx="516" cy="235" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
+    <!-- Magenta Input Stream from Person 2 (515,340 -> 440,350) -->
+    <path d="M 515,340 Q 480,350 440,350" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
+    <circle cx="440" cy="350" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
 
     <!-- Central Multiplexer Reactor Housing -->
-    <circle cx="480" cy="235" r="36" fill="#0c1024" stroke="url(#core-grad)" stroke-width="3.5" filter="url(#glow-cyan)" />
-    <circle cx="480" cy="235" r="18" fill="#00F2FE" filter="url(#glow-cyan)" />
+    <circle cx="400" cy="350" r="38" fill="#0c1024" stroke="url(#core-grad)" stroke-width="3.5" filter="url(#glow-cyan)" />
+    <circle cx="400" cy="350" r="18" fill="#00F2FE" filter="url(#glow-cyan)" />
   </g>
 
   <!-- LAYER 3: PERSON 1 CYAN CURSOR -->
   <g id="layer-03-cyan-cursor" filter="url(#drop-shadow)">
     <!-- Cyan Cursor Geometry -->
     <g filter="url(#glow-cyan)">
-      <polygon points="260,150 285,270 305,240 340,290 360,270 325,220 365,220" fill="url(#cyan-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
-      <polyline points="266,160 286,255 300,232" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
+      <polygon points="180,260 205,380 225,350 260,400 280,380 245,330 285,330" fill="url(#cyan-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+      <polyline points="186,270 206,365 220,342" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
     </g>
 
-    <!-- Glassmorphic Name Badge Container: Box y=75 to y=117 (height 42, width 140). Text at y=101 DEAD CENTER INSIDE BOX -->
+    <!-- Glassmorphic Name Badge Container (x=95, y=185, w=140, h=42). Text at x=176, y=211 DEAD CENTER -->
     <g>
-      <rect x="155" y="75" width="140" height="42" rx="10" fill="#071222" fill-opacity="0.95" stroke="#00F2FE" stroke-width="2" />
-      <circle cx="178" cy="96" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
-      <text x="236" y="101" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 1</text>
+      <rect x="95" y="185" width="140" height="42" rx="10" fill="#071222" fill-opacity="0.95" stroke="#00F2FE" stroke-width="2" />
+      <circle cx="118" cy="206" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
+      <text x="176" y="211" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 1</text>
     </g>
   </g>
 
@@ -112,33 +131,33 @@
   <g id="layer-04-magenta-cursor" filter="url(#drop-shadow)">
     <!-- Magenta Cursor Geometry -->
     <g filter="url(#glow-magenta)">
-      <polygon points="700,150 675,270 655,240 620,290 600,270 635,220 595,220" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
-      <polyline points="694,160 674,255 660,232" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
+      <polygon points="620,260 595,380 575,350 540,400 520,380 555,330 515,330" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+      <polyline points="614,270 594,365 580,342" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
     </g>
 
-    <!-- Glassmorphic Name Badge Container: Box y=75 to y=117 (height 42, width 140). Text at y=101 DEAD CENTER INSIDE BOX -->
+    <!-- Glassmorphic Name Badge Container (x=565, y=185, w=140, h=42). Text at x=646, y=211 DEAD CENTER -->
     <g>
-      <rect x="665" y="75" width="140" height="42" rx="10" fill="#240712" fill-opacity="0.95" stroke="#FF0844" stroke-width="2" />
-      <circle cx="688" cy="96" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
-      <text x="746" y="101" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 2</text>
+      <rect x="565" y="185" width="140" height="42" rx="10" fill="#240712" fill-opacity="0.95" stroke="#FF0844" stroke-width="2" />
+      <circle cx="588" cy="206" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
+      <text x="646" y="211" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="900" letter-spacing="1.5" fill="#ffffff" text-anchor="middle">PERSON 2</text>
     </g>
   </g>
 
   <!-- LAYER 5: TYPOGRAPHY & BRANDING -->
   <g id="layer-05-typography" filter="url(#drop-shadow)">
-    <!-- Epic Cyberpunk Title with Sharp Text & Neon Accent -->
-    <text x="480" y="440" font-family="'Segoe UI', 'Outfit', 'Inter', sans-serif" font-size="56" font-weight="900" letter-spacing="6" fill="#ffffff" text-anchor="middle">
+    <!-- Title Text -->
+    <text x="400" y="620" font-family="'Segoe UI', 'Outfit', 'Inter', sans-serif" font-size="52" font-weight="900" letter-spacing="6" fill="#ffffff" text-anchor="middle">
       CONTROL<tspan fill="#00F2FE">MUX</tspan>
     </text>
 
-    <!-- Subtitle Pill Tag: Box y=470, height=32, text at y=491 -->
-    <rect x="290" y="470" width="380" height="32" rx="16" fill="#0c1024" stroke="url(#core-grad)" stroke-width="1.5" />
-    <text x="480" y="491" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" letter-spacing="2" fill="#e2e8f0" text-anchor="middle">
+    <!-- Subtitle Pill Tag -->
+    <rect x="220" y="650" width="360" height="32" rx="16" fill="#0c1024" stroke="url(#core-grad)" stroke-width="1.5" />
+    <text x="400" y="671" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" letter-spacing="2" fill="#e2e8f0" text-anchor="middle">
       MULTI-PERSON INPUT CONTROL ENGINE
     </text>
 
     <!-- Author Attribution -->
-    <text x="480" y="538" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" letter-spacing="1.5" fill="#64748b" text-anchor="middle">
+    <text x="400" y="718" font-family="'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" letter-spacing="1.5" fill="#64748b" text-anchor="middle">
       BY ALIF NURHIDAYAT
     </text>
   </g>

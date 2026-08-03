@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="ControlMux Logo" width="600">
+  <img src="assets/logo.svg" alt="ControlMux App Logo" width="480">
 </p>
 
 <h1 align="center">ControlMux 🖱️⌨️</h1>
@@ -24,7 +24,7 @@
 - **Zero Heavy Dependencies**: Built using native platform APIs (`Win32 Raw Input`, `GDI+` on Windows; `libevdev`, `/dev/input/`, `X11`/`Cairo` on Linux). No heavy Python, Node, or Electron runtime needed.
 - **Hardware-Level Device Pairing**: Maps physical mice and keyboards by unique hardware HID instance IDs (`HID\VID_xxxx&PID_xxxx` or `/dev/input/by-id/`).
 - **Multi-Cursor Overlay**: Transparent, double-buffered screen overlay with colored pointer arrows, click ripple animations, and person name badges (`Person 1`, `Person 2`).
-- **Editable Layered Vector Logo**: Logo consists of 5 modular SVG vector layers ([assets/logo.svg](file:///d:/CraftThingy/controlmux/assets/logo.svg) & [assets/logo_layers/](file:///d:/CraftThingy/controlmux/assets/logo_layers/)) for easy editing in Photoshop, Illustrator, GIMP, or Figma.
+- **1:1 Square App Icon & Vector Source**: Logo is built in a 1:1 square aspect ratio with futuristic corner bracket edges—ready for use as an app icon (`.ico`, `.png`), taskbar icon, or GitHub avatar!
 - **Focus Isolation & Input Routing**:
   - **Switched Focus Mode**: Seamlessly switches active OS mouse focus when a person moves/clicks, while isolating secondary keyboards to prevent cross-person keypress pollution.
   - **Direct Target Mode**: Directs keypresses via native message injection to each person's target window handle.
@@ -34,11 +34,11 @@
 
 ## 🎨 Layered Logo System (Photoshop / Illustrator / Figma Ready)
 
-The ControlMux logo is designed as a **multi-layer SVG vector graphics system** so you can freely edit, swap, or tweak any element:
+The ControlMux logo is designed as a **1:1 square multi-layer SVG vector graphics system** so you can freely edit, swap, or tweak any element:
 
 - 📄 **Combined Layered Vector**: [`assets/logo.svg`](file:///d:/CraftThingy/controlmux/assets/logo.svg) (contains labeled `<g id="layer-01-background">`, `<g id="layer-03-cyan-cursor">` layer groups)
 - 📂 **Standalone Layer SVGs**: [`assets/logo_layers/`](file:///d:/CraftThingy/controlmux/assets/logo_layers/)
-  - `01_background.svg` (Dark gradient background & tech desktop grid)
+  - `01_background.svg` (Dark gradient background, corner bracket edge accents & tech desktop grid)
   - `02_circuit_core.svg` (Quantum multiplexer core node & circuit trails)
   - `03_cyan_cursor.svg` (Person 1 cyan neon 3D pointer & glassmorphic badge)
   - `04_magenta_cursor.svg` (Person 2 magenta neon 3D pointer & glassmorphic badge)
