@@ -4,6 +4,7 @@
  */
 
 #include "input_engine.hpp"
+#include "gui_win32.hpp"
 #include <iostream>
 
 InputEngine* InputEngine::s_instance = nullptr;
@@ -66,6 +67,9 @@ LPARAM InputEngine::ProcessRawInput(WPARAM wParam, LPARAM lParam) {
     if (m_dev_mgr.IsPairing()) {
         if (m_dev_mgr.OnInputReceivedForPairing(raw->header.hDevice, raw->header.dwType, m_config)) {
             ConfigManager::Save(L"controlmux_config.ini", m_config);
+            if (GuiWin32::s_gui_instance && GuiWin32::s_gui_instance->GetPanelHwnd()) {
+                PostMessage(GuiWin32::s_gui_instance->GetPanelHwnd(), WM_PAIRING_UPDATED, 0, 0);
+            }
             return 0;
         }
     }

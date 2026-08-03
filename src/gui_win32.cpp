@@ -225,20 +225,30 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
             MoveToEx(hdc, 14, 94, NULL); LineTo(hdc, rc.right - 14, 94);
             SelectObject(hdc, divOld); DeleteObject(div);
 
-            // ── Person list header ────────────────────────────────────────
+            // ── Pairing Banner or Person list header ─────────────────────
             HFONT fHdr = MakeFont(10, true);
             SelectObject(hdc, fHdr);
-            SetTextColor(hdc, TXT_DIM);
-            RECT rhdr = {14, 97, rc.right - 34, 115};
-            DrawTextW(hdc, L"  #   PERSON NAME            MOUSE      KEYBOARD",
-                      -1, &rhdr, DT_LEFT | DT_SINGLELINE);
+
+            if (self->m_dev_mgr.IsPairing()) {
+                // Active Pairing Mode Banner
+                FillRoundRect(hdc, 14, 95, rc.right - 28, 20, 4, RGB(220, 120, 0));
+                SetTextColor(hdc, RGB(255, 255, 255));
+                RECT rpair = {14, 96, rc.right - 28, 115};
+                DrawTextW(hdc, L"⚡ PAIRING ACTIVE: Click or move device now... (Click to cancel)",
+                          -1, &rpair, DT_CENTER | DT_SINGLELINE);
+            } else {
+                SetTextColor(hdc, TXT_DIM);
+                RECT rhdr = {14, 97, rc.right - 34, 115};
+                DrawTextW(hdc, L"  #   PERSON NAME            MOUSE PAIR    KEYBOARD PAIR   RESET",
+                          -1, &rhdr, DT_LEFT | DT_SINGLELINE);
+            }
 
             // Divider 2
-            MoveToEx(hdc, 14, 113, NULL); LineTo(hdc, rc.right - 34, 113);
+            MoveToEx(hdc, 14, 117, NULL); LineTo(hdc, rc.right - 34, 117);
 
             // ── Person rows ───────────────────────────────────────────────
             HFONT fRow  = MakeFont(12, true);
-            HFONT fRowS = MakeFont(11, false);
+            HFONT fRowS = MakeFont(10, true);
 
             int listTop = HDR_H;  // == 170
             int visStart = self->m_scroll_offset;
@@ -271,26 +281,32 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
                 // Name
                 SelectObject(hdc, fRow);
                 SetTextColor(hdc, TXT);
-                RECT rname = {50, ry + 10, 200, ry + 30};
+                RECT rname = {50, ry + 10, 195, ry + 30};
                 std::wstring nm = p.name;
-                if (nm.size() > 14) nm = nm.substr(0, 13) + L"\u2026";
+                if (nm.size() > 13) nm = nm.substr(0, 12) + L"\u2026";
                 DrawTextW(hdc, nm.c_str(), -1, &rname, DT_LEFT | DT_SINGLELINE);
 
-                // Mouse status dot
+                // 1. Mouse Pair Button: x = 200, w = 68, h = 24
                 bool hasM = !p.mouse_hwid.empty();
-                COLORREF mc = hasM ? GREEN : RGB(60,65,80);
-                FillRoundRect(hdc, 208, ry + 14, 58, 14, 5, mc);
+                COLORREF mc = hasM ? GREEN : RGB(35, 45, 70);
+                FillRoundRect(hdc, 200, ry + 9, 68, 24, 6, mc);
                 SelectObject(hdc, fRowS);
-                SetTextColor(hdc, RGB(255,255,255));
-                RECT rmouse = {208, ry + 14, 266, ry + 28};
-                DrawTextW(hdc, hasM ? L"\u25CF Paired" : L"\u25CB Auto", -1, &rmouse, DT_CENTER | DT_SINGLELINE);
+                SetTextColor(hdc, RGB(255, 255, 255));
+                RECT rmouse = {200, ry + 13, 268, ry + 31};
+                DrawTextW(hdc, hasM ? L"● Mouse" : L"🎯 Mouse", -1, &rmouse, DT_CENTER | DT_SINGLELINE);
 
-                // Keyboard status dot
+                // 2. Keyboard Pair Button: x = 276, w = 68, h = 24
                 bool hasK = !p.keyboard_hwid.empty();
-                COLORREF kc = hasK ? GREEN : RGB(60,65,80);
-                FillRoundRect(hdc, 272, ry + 14, 58, 14, 5, kc);
-                RECT rkb = {272, ry + 14, 330, ry + 28};
-                DrawTextW(hdc, hasK ? L"\u25CF Paired" : L"\u25CB Auto", -1, &rkb, DT_CENTER | DT_SINGLELINE);
+                COLORREF kc = hasK ? GREEN : RGB(35, 45, 70);
+                FillRoundRect(hdc, 276, ry + 9, 68, 24, 6, kc);
+                RECT rkb = {276, ry + 13, 344, ry + 31};
+                DrawTextW(hdc, hasK ? L"● KB" : L"🎯 KB", -1, &rkb, DT_CENTER | DT_SINGLELINE);
+
+                // 3. Reset / Auto Button: x = 352, w = 64, h = 24
+                FillRoundRect(hdc, 352, ry + 9, 64, 24, 6, RGB(30, 35, 50));
+                SetTextColor(hdc, TXT_DIM);
+                RECT rreset = {352, ry + 13, 416, ry + 31};
+                DrawTextW(hdc, L"🔄 Auto", -1, &rreset, DT_CENTER | DT_SINGLELINE);
 
                 // Row bottom divider
                 HPEN rowDiv = CreatePen(PS_SOLID, 1, DIVIDER);
@@ -359,6 +375,57 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
             InvalidateRect(hwnd, NULL, FALSE);
         }
         return 0;
+
+    // ── Pairing updated notification message ────────────────────────────
+    case WM_PAIRING_UPDATED:
+        InvalidateRect(hwnd, NULL, FALSE);
+        return 0;
+
+    // ── Left click hit-testing for 1-click device pair & reset buttons ─
+    case WM_LBUTTONDOWN: {
+        if (!self) break;
+        int x = LOWORD(lp);
+        int y = HIWORD(lp);
+
+        // Click on active pairing banner cancels pairing
+        if (self->m_dev_mgr.IsPairing() && y >= 94 && y <= 114) {
+            self->m_dev_mgr.StopPairing();
+            InvalidateRect(hwnd, NULL, FALSE);
+            return 0;
+        }
+
+        int listTop  = HDR_H;
+        int listBottom = listTop + LIST_H;
+        if (y >= listTop && y < listBottom && x < PW - 30) {
+            int clickedIdx = self->m_scroll_offset + (y - listTop) / ROW_H;
+            if (clickedIdx >= 0 && clickedIdx < (int)self->m_config.persons.size()) {
+                auto& p = self->m_config.persons[clickedIdx];
+
+                // Mouse Pair button: x = 200..268
+                if (x >= 200 && x <= 268) {
+                    self->m_dev_mgr.StartPairing(p.id, true);
+                    InvalidateRect(hwnd, NULL, FALSE);
+                    return 0;
+                }
+                // Keyboard Pair button: x = 276..344
+                if (x >= 276 && x <= 344) {
+                    self->m_dev_mgr.StartPairing(p.id, false);
+                    InvalidateRect(hwnd, NULL, FALSE);
+                    return 0;
+                }
+                // Reset / Auto button: x = 352..416
+                if (x >= 352 && x <= 416) {
+                    p.mouse_hwid.clear();
+                    p.keyboard_hwid.clear();
+                    self->m_dev_mgr.SyncWithConfig(self->m_config);
+                    ConfigManager::Save(L"controlmux_config.ini", self->m_config);
+                    InvalidateRect(hwnd, NULL, FALSE);
+                    return 0;
+                }
+            }
+        }
+        break;
+    }
 
     // ── Button commands ───────────────────────────────────────────────────
     case WM_COMMAND:

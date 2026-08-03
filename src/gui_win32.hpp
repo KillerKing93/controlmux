@@ -13,11 +13,18 @@
 #include "config.hpp"
 
 #define WM_TRAYICON           (WM_USER + 1)
+#define WM_PAIRING_UPDATED    (WM_USER + 50)
+
 #define ID_TRAY_TOGGLE_ENABLE  1001
 #define ID_TRAY_MODE_SWITCHED  1002
 #define ID_TRAY_MODE_DIRECT    1003
 #define ID_TRAY_PAIR_WIZARD    1004
 #define ID_TRAY_EXIT           1005
+
+// Action button base IDs per person slot (0..15)
+#define BTN_PAIR_MOUSE_BASE  200
+#define BTN_PAIR_KB_BASE     220
+#define BTN_UNPAIR_BASE      240
 
 
 
@@ -43,6 +50,8 @@ public:
 
     /** @brief Removes tray icon on shutdown. */
     void Shutdown();
+
+    HWND GetPanelHwnd() const { return m_hwndPanel; }
 
     static GuiWin32* s_gui_instance;
 
