@@ -1,18 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="100%" height="100%">
   <defs>
     <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
-      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+      <feGaussianBlur stdDeviation="8" result="blur1" /><feGaussianBlur stdDeviation="3" result="blur2" />
+      <feMerge><feMergeNode in="blur1" /><feMergeNode in="blur2" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <filter id="drop-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="4" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.8" />
     </filter>
     <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#00F2FE" />
-      <stop offset="100%" stop-color="#4FACFE" />
+      <stop offset="50%" stop-color="#4FACFE" />
+      <stop offset="100%" stop-color="#0066FF" />
     </linearGradient>
   </defs>
   <!-- LAYER 3: PERSON 1 CYAN CURSOR -->
-  <g id="layer-03-cyan-cursor" filter="url(#glow-cyan)">
-    <polygon points="210,120 235,220 255,195 285,235 300,220 270,180 305,180" fill="url(#cyan-grad)" stroke="#ffffff" stroke-width="2" />
-    <rect x="170" y="100" width="70" height="22" rx="4" fill="#09182a" stroke="#00F2FE" stroke-width="1.5" />
-    <text x="205" y="115" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#00F2FE" text-anchor="middle">PERSON 1</text>
+  <g id="layer-03-cyan-cursor" filter="url(#drop-shadow)">
+    <g>
+      <rect x="175" y="95" width="120" height="34" rx="8" fill="#0a1628" fill-opacity="0.9" stroke="#00F2FE" stroke-width="2" />
+      <circle cx="193" cy="112" r="5" fill="#00F2FE" filter="url(#glow-cyan)" />
+      <text x="245" y="117" font-family="'Segoe UI', 'Inter', sans-serif" font-size="12" font-weight="800" letter-spacing="1" fill="#ffffff" text-anchor="middle">PERSON 1</text>
+    </g>
+    <g filter="url(#glow-cyan)">
+      <polygon points="260,160 285,280 305,250 340,300 360,280 325,230 365,230" fill="url(#cyan-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+      <polyline points="266,170 286,265 300,242" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
+    </g>
   </g>
 </svg>

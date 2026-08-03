@@ -1,29 +1,25 @@
-# ControlMux Modular Layered Logo Assets
+# ControlMux Layered Vector Logo Source
 
-The ControlMux logo graphics are built using a **multi-layer asset system** so you can freely edit, swap, or tweak any layer in **Photoshop, GIMP, Figma, Illustrator, or Canva**.
+The ControlMux logo graphics are built using a **pure multi-layer SVG vector graphics architecture** for maximum editing flexibility in **Photoshop, Illustrator, Figma, Inkscape, or GIMP**.
 
 ---
 
-## 📂 Layer File Manifest
+## 🎨 Layer Structure Overview
 
-The logo consists of **5 independent transparent PNG layers** inside `assets/logo_layers/`:
+The logo is divided into 5 independent vector graphic layers:
 
-| Layer File | Layer Name | Description |
+| Layer File | Layer Group Name | Description |
 | :--- | :--- | :--- |
-| **`01_background.png`** | Background | Dark radial gradient with desktop grid lines |
-| **`02_circuit_core.png`** | Circuit & Core | Multiplexer core, orbital rings & connection wires |
-| **`03_cyan_cursor.png`** | Person 1 Cursor | 3D Neon Cyan pointer cursor & `PERSON 1` badge |
-| **`04_magenta_cursor.png`** | Person 2 Cursor | 3D Neon Magenta pointer cursor & `PERSON 2` badge |
-| **`05_typography.png`** | Brand & Typography | ControlMux title text & author attribution |
+| **`01_background.svg`** | `layer-01-background` | Dark radial tech background & desktop grid lines |
+| **`02_circuit_core.svg`** | `layer-02-circuit-core` | Quantum multiplexer core, orbital rings & connection wires |
+| **`03_cyan_cursor.svg`** | `layer-03-cyan-cursor` | 3D Neon Cyan pointer arrow & `PERSON 1` glassmorphic badge |
+| **`04_magenta_cursor.svg`** | `layer-04-magenta-cursor` | 3D Neon Magenta pointer arrow & `PERSON 2` glassmorphic badge |
+| **`05_typography.svg`** | `layer-05-typography` | ControlMux title text & author credit (`By Alif Nurhidayat`) |
 
 ---
 
-## 🛠️ How to Edit in Photoshop / GIMP / Canva / Figma
+## 🖌️ How to Edit in Graphics Software
 
-1. **Photoshop / GIMP / Canva**: Drag and drop all 5 PNG files from `assets/logo_layers/` onto a single canvas in order (1 at the bottom to 5 at the top).
-2. **Vector SVG Source**: You can also open **`assets/logo.svg`** directly in **Adobe Illustrator / Inkscape / Figma**, where all elements are grouped as editable layers (`<g id="layer-01-background">`, etc.).
-3. **Rebuilding `logo.png`**: After making any edits to individual layer files, simply run:
-   ```bash
-   python assets/merge_logo.py
-   ```
-   This will automatically re-composite all layers and update **`assets/logo.png`**!
+### Photoshop / Illustrator / GIMP / Inkscape / Figma
+1. Open **[assets/logo.svg](file:///d:/CraftThingy/controlmux/assets/logo.svg)** directly. All groups (`<g id="layer-01-background">`, `<g id="layer-03-cyan-cursor">`, etc.) will display as native editable layers in your layer panel.
+2. Or drag and drop the individual files from `assets/logo_layers/` onto separate canvas layers.

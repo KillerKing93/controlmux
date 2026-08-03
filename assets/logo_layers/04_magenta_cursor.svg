@@ -1,18 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="100%" height="100%">
   <defs>
     <filter id="glow-magenta" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
-      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+      <feGaussianBlur stdDeviation="8" result="blur1" /><feGaussianBlur stdDeviation="3" result="blur2" />
+      <feMerge><feMergeNode in="blur1" /><feMergeNode in="blur2" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <filter id="drop-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="4" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.8" />
     </filter>
     <linearGradient id="magenta-grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FF0844" />
-      <stop offset="100%" stop-color="#FFB199" />
+      <stop offset="50%" stop-color="#FF4E50" />
+      <stop offset="100%" stop-color="#F9D423" />
     </linearGradient>
   </defs>
   <!-- LAYER 4: PERSON 2 MAGENTA CURSOR -->
-  <g id="layer-04-magenta-cursor" filter="url(#glow-magenta)">
-    <polygon points="590,120 565,220 545,195 515,235 500,220 530,180 495,180" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2" />
-    <rect x="560" y="100" width="70" height="22" rx="4" fill="#250914" stroke="#FF0844" stroke-width="1.5" />
-    <text x="595" y="115" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#FF0844" text-anchor="middle">PERSON 2</text>
+  <g id="layer-04-magenta-cursor" filter="url(#drop-shadow)">
+    <g filter="url(#glow-magenta)">
+      <polygon points="710,110 685,230 665,200 630,250 610,230 645,180 605,180" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+      <polyline points="704,120 684,215 670,192" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
+    </g>
+    <g>
+      <rect x="680" y="85" width="100" height="30" rx="6" fill="#280a16" fill-opacity="0.85" stroke="#FF0844" stroke-width="2" />
+      <circle cx="698" cy="100" r="5" fill="#FF0844" filter="url(#glow-magenta)" />
+      <text x="742" y="120" font-family="'Segoe UI', 'Inter', sans-serif" font-size="12" font-weight="800" letter-spacing="1" fill="#ffffff" text-anchor="middle">PERSON 2</text>
+    </g>
   </g>
 </svg>

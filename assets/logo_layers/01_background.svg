@@ -1,15 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="100%" height="100%">
   <defs>
     <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0a0c16" />
-      <stop offset="50%" stop-color="#101426" />
-      <stop offset="100%" stop-color="#07080f" />
+      <stop offset="0%" stop-color="#060814" />
+      <stop offset="40%" stop-color="#0c1024" />
+      <stop offset="70%" stop-color="#141a38" />
+      <stop offset="100%" stop-color="#04050a" />
     </linearGradient>
+    <radialGradient id="plasma-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.5" />
+      <stop offset="50%" stop-color="#7F00FF" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
   </defs>
   <!-- LAYER 1: BACKGROUND -->
   <g id="layer-01-background">
-    <rect width="800" height="500" rx="16" fill="url(#bg-grad)" />
-    <path d="M 0,100 L 800,100 M 0,200 L 800,200 M 0,300 L 800,300 M 0,400 L 800,400" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
-    <path d="M 160,0 L 160,500 M 320,0 L 320,500 M 480,0 L 480,500 M 640,0 L 640,500" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
+    <rect width="960" height="600" rx="20" fill="url(#bg-grad)" />
+    <circle cx="480" cy="240" r="280" fill="url(#plasma-glow)" />
+    <path d="M 0,120 L 960,120 M 0,240 L 960,240 M 0,360 L 960,360 M 0,480 L 960,480" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
+    <path d="M 192,0 L 192,600 M 384,0 L 384,600 M 576,0 L 576,600 M 768,0 L 768,600" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
   </g>
 </svg>
