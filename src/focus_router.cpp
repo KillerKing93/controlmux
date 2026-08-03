@@ -33,14 +33,24 @@ void FocusRouter::OnPersonMouseMove(PersonState& person, int dx, int dy, AppConf
     int screen_w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     int screen_h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
-    person.cursor_x += dx;
-    person.cursor_y += dy;
+    if (person.id == m_active_person_id) {
+        // Active focus person matches physical OS mouse cursor position to 100% exact pixel
+        POINT pt;
+        if (GetCursorPos(&pt)) {
+            person.cursor_x = pt.x;
+            person.cursor_y = pt.y;
+        }
+    } else {
+        // Secondary persons accumulate relative movement deltas
+        person.cursor_x += dx;
+        person.cursor_y += dy;
 
-    // Clamp coordinates to stay within visible display bounds
-    if (person.cursor_x < screen_x) person.cursor_x = screen_x;
-    if (person.cursor_x >= screen_x + screen_w) person.cursor_x = screen_x + screen_w - 1;
-    if (person.cursor_y < screen_y) person.cursor_y = screen_y;
-    if (person.cursor_y >= screen_y + screen_h) person.cursor_y = screen_y + screen_h - 1;
+        // Clamp coordinates to stay within visible virtual screen bounds
+        if (person.cursor_x < screen_x) person.cursor_x = screen_x;
+        if (person.cursor_x >= screen_x + screen_w) person.cursor_x = screen_x + screen_w - 1;
+        if (person.cursor_y < screen_y) person.cursor_y = screen_y;
+        if (person.cursor_y >= screen_y + screen_h) person.cursor_y = screen_y + screen_h - 1;
+    }
 
     person.target_hwnd = FindTargetWindowAt(person.cursor_x, person.cursor_y);
 }

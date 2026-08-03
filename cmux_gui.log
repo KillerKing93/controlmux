@@ -3,6 +3,6 @@ Shell_TrayWnd: NOT FOUND
 Calling OpenControlPanel...
 Monitor work=[0,0,2048,1104]
 Panel @ 794,284 460x536
-CreateWindowExW: 1642778 err=0
+CreateWindowExW: 6821730 err=0
 Panel shown OK.
-Done. m_hwndPanel=1642778
+Done. m_hwndPanel=6821730

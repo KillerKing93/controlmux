@@ -73,6 +73,16 @@ bool OverlayRenderer::Initialize(HINSTANCE hInstance) {
 void OverlayRenderer::Render(const std::vector<PersonState>& persons, int active_person_id) {
     if (!m_hwnd) return;
 
+    // Dynamically refresh virtual screen bounds across all monitors
+    m_screen_x = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    m_screen_y = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    m_screen_w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    m_screen_h = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+    // Re-assert HWND_TOPMOST so overlay window NEVER slips behind other windows
+    SetWindowPos(m_hwnd, HWND_TOPMOST, m_screen_x, m_screen_y, m_screen_w, m_screen_h,
+                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
+
     HDC hdcScreen = GetDC(NULL);
     HDC hdcMem = CreateCompatibleDC(hdcScreen);
 
