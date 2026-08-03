@@ -1,17 +1,3 @@
-# Build output
-*.exe
 *.o
-*.obj
-*.dll
-*.so
-*.a
-
-# Config & local settings
-controlmux_config.ini
-controlmux_config.json
-
-# IDE & OS files
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
+*.exe
+*.log

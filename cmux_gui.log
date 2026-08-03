@@ -1,8 +1,0 @@
-=== GuiWin32::Initialize ===
-Shell_TrayWnd: NOT FOUND
-Calling OpenControlPanel...
-Monitor work=[0,0,2560,1380]
-Panel @ 1050,422 460x536
-CreateWindowExW: 6952802 err=0
-Panel shown OK.
-Done. m_hwndPanel=6952802
