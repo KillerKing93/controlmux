@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="ControlMux Logo" width="480">
+  <img src="assets/logo.svg" alt="ControlMux Logo" width="540">
 </p>
 
 <h1 align="center">ControlMux 🖱️⌨️</h1>
@@ -24,10 +24,25 @@
 - **Zero Heavy Dependencies**: Built using native platform APIs (`Win32 Raw Input`, `GDI+` on Windows; `libevdev`, `/dev/input/`, `X11`/`Cairo` on Linux). No heavy Python, Node, or Electron runtime needed.
 - **Hardware-Level Device Pairing**: Maps physical mice and keyboards by unique hardware HID instance IDs (`HID\VID_xxxx&PID_xxxx` or `/dev/input/by-id/`).
 - **Multi-Cursor Overlay**: Transparent, double-buffered screen overlay with colored pointer arrows, click ripple animations, and person name badges (`Person 1`, `Person 2`).
+- **Editable Layered Logo Source**: Includes modular SVG vector layer sources ([assets/logo.svg](file:///d:/CraftThingy/controlmux/assets/logo.svg) & [assets/logo_layers/](file:///d:/CraftThingy/controlmux/assets/logo_layers/)) for easy editing in Photoshop, Illustrator, GIMP, or Figma.
 - **Focus Isolation & Input Routing**:
   - **Switched Focus Mode**: Seamlessly switches active OS mouse focus when a person moves/clicks, while isolating secondary keyboards to prevent cross-person keypress pollution.
   - **Direct Target Mode**: Directs keypresses via native message injection to each person's target window handle.
 - **System Tray Management**: Easily toggle control, switch routing modes, and view device profiles from the system tray menu.
+
+---
+
+## 🎨 Layered Logo Assets
+
+The logo is provided as a **fully modular, multi-layer vector asset** that can be opened and edited in **Photoshop, Illustrator, Figma, Inkscape, or GIMP**:
+
+- 📄 **Combined Vector**: [`assets/logo.svg`](file:///d:/CraftThingy/controlmux/assets/logo.svg) (contains labeled `<g id="layer-...">` groups)
+- 📂 **Individual Layers**: [`assets/logo_layers/`](file:///d:/CraftThingy/controlmux/assets/logo_layers/)
+  - `01_background.svg`: Dark gradient background and desktop grid
+  - `02_circuit_grid.svg`: Multiplexer core node & circuit trails
+  - `03_cyan_cursor.svg`: Person 1 cyan cursor and badge
+  - `04_magenta_cursor.svg`: Person 2 magenta cursor and badge
+  - `05_typography.svg`: ControlMux typography & author credit
 
 ---
 

@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0c16" />
+      <stop offset="50%" stop-color="#101426" />
+      <stop offset="100%" stop-color="#07080f" />
+    </linearGradient>
+
+    <!-- Core Glow Filters -->
+    <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="glow-magenta" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Cyan Cursor Gradient -->
+    <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F2FE" />
+      <stop offset="100%" stop-color="#4FACFE" />
+    </linearGradient>
+
+    <!-- Magenta Cursor Gradient -->
+    <linearGradient id="magenta-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF0844" />
+      <stop offset="100%" stop-color="#FFB199" />
+    </linearGradient>
+
+    <!-- Node Ring Gradient -->
+    <linearGradient id="core-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F2FE" />
+      <stop offset="50%" stop-color="#7F00FF" />
+      <stop offset="100%" stop-color="#FF0844" />
+    </linearGradient>
+  </defs>
+
+  <!-- LAYER 1: BACKGROUND -->
+  <g id="layer-01-background">
+    <rect width="800" height="500" rx="16" fill="url(#bg-grad)" />
+    <!-- Background Grid Lines -->
+    <path d="M 0,100 L 800,100 M 0,200 L 800,200 M 0,300 L 800,300 M 0,400 L 800,400" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
+    <path d="M 160,0 L 160,500 M 320,0 L 320,500 M 480,0 L 480,500 M 640,0 L 640,500" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
+  </g>
+
+  <!-- LAYER 2: CIRCUIT NODES & MULTIPLEXER CORE -->
+  <g id="layer-02-circuit-grid">
+    <!-- Orbital Rings -->
+    <circle cx="400" cy="200" r="90" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="8 6" />
+    <circle cx="400" cy="200" r="60" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.15" />
+    <circle cx="400" cy="200" r="25" fill="#101426" stroke="url(#core-grad)" stroke-width="3" filter="url(#glow-cyan)" />
+    
+    <!-- Circuit Connection Paths -->
+    <path d="M 220 200 L 310 200" stroke="#00F2FE" stroke-width="2.5" stroke-opacity="0.8" filter="url(#glow-cyan)" />
+    <path d="M 580 200 L 490 200" stroke="#FF0844" stroke-width="2.5" stroke-opacity="0.8" filter="url(#glow-magenta)" />
+    <path d="M 400 90 L 400 140" stroke="#7F00FF" stroke-width="2" stroke-opacity="0.6" />
+    
+    <!-- Node Connection Dots -->
+    <circle cx="220" cy="200" r="4" fill="#00F2FE" />
+    <circle cx="580" cy="200" r="4" fill="#FF0844" />
+    <circle cx="400" cy="90" r="4" fill="#7F00FF" />
+  </g>
+
+  <!-- LAYER 3: PERSON 1 CYAN CURSOR -->
+  <g id="layer-03-cyan-cursor" filter="url(#glow-cyan)">
+    <!-- Cyan Cursor Shape -->
+    <polygon points="210,120 235,220 255,195 285,235 300,220 270,180 305,180" fill="url(#cyan-grad)" stroke="#ffffff" stroke-width="2" />
+    <!-- Badge -->
+    <rect x="170" y="100" width="70" height="22" rx="4" fill="#09182a" stroke="#00F2FE" stroke-width="1.5" />
+    <text x="205" y="115" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#00F2FE" text-anchor="middle">PERSON 1</text>
+  </g>
+
+  <!-- LAYER 4: PERSON 2 MAGENTA CURSOR -->
+  <g id="layer-04-magenta-cursor" filter="url(#glow-magenta)">
+    <!-- Magenta Cursor Shape -->
+    <polygon points="590,120 565,220 545,195 515,235 500,220 530,180 495,180" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2" />
+    <!-- Badge -->
+    <rect x="560" y="100" width="70" height="22" rx="4" fill="#250914" stroke="#FF0844" stroke-width="1.5" />
+    <text x="595" y="115" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#FF0844" text-anchor="middle">PERSON 2</text>
+  </g>
+
+  <!-- LAYER 5: TYPOGRAPHY & BRANDING -->
+  <g id="layer-05-typography">
+    <!-- Brand Title -->
+    <text x="400" y="375" font-family="'Segoe UI', 'Outfit', 'Inter', sans-serif" font-size="44" font-weight="900" letter-spacing="4" fill="#ffffff" text-anchor="middle">
+      CONTROL<tspan fill="#00F2FE">MUX</tspan>
+    </text>
+    <!-- Subtitle -->
+    <text x="400" y="415" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="600" letter-spacing="2" fill="#a0aec0" text-anchor="middle">
+      MULTI-PERSON INPUT CONTROL ENGINE
+    </text>
+    <!-- Author Tag -->
+    <text x="400" y="445" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500" letter-spacing="1" fill="#4a5568" text-anchor="middle">
+      BY ALIF NURHIDAYAT
+    </text>
+  </g>
+</svg>

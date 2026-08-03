@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <filter id="glow-magenta" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <linearGradient id="core-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F2FE" />
+      <stop offset="50%" stop-color="#7F00FF" />
+      <stop offset="100%" stop-color="#FF0844" />
+    </linearGradient>
+  </defs>
+  <!-- LAYER 2: CIRCUIT NODES & MULTIPLEXER CORE -->
+  <g id="layer-02-circuit-grid">
+    <circle cx="400" cy="200" r="90" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="8 6" />
+    <circle cx="400" cy="200" r="60" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.15" />
+    <circle cx="400" cy="200" r="25" fill="#101426" stroke="url(#core-grad)" stroke-width="3" filter="url(#glow-cyan)" />
+    <path d="M 220 200 L 310 200" stroke="#00F2FE" stroke-width="2.5" stroke-opacity="0.8" filter="url(#glow-cyan)" />
+    <path d="M 580 200 L 490 200" stroke="#FF0844" stroke-width="2.5" stroke-opacity="0.8" filter="url(#glow-magenta)" />
+    <path d="M 400 90 L 400 140" stroke="#7F00FF" stroke-width="2" stroke-opacity="0.6" />
+    <circle cx="220" cy="200" r="4" fill="#00F2FE" />
+    <circle cx="580" cy="200" r="4" fill="#FF0844" />
+    <circle cx="400" cy="90" r="4" fill="#7F00FF" />
+  </g>
+</svg>
