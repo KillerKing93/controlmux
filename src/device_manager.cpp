@@ -189,6 +189,61 @@ void DeviceManager::SyncWithConfig(AppConfig& config) {
     }
 }
 
+void DeviceManager::AddPerson(const PersonConfig& pc) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    PersonState ps;
+    ps.id = pc.id;
+    ps.name = pc.name;
+    ps.color = pc.color;
+    ps.mouse_hwid = pc.mouse_hwid;
+    ps.keyboard_hwid = pc.keyboard_hwid;
+
+    int virtual_screen_w = GetSystemMetrics(SM_CXSCREEN);
+    int virtual_screen_h = GetSystemMetrics(SM_CYSCREEN);
+    ps.cursor_x = (virtual_screen_w / ((int)m_persons.size() + 2)) * pc.id;
+    ps.cursor_y = virtual_screen_h / 2;
+
+    std::vector<PhysicalDevice> mice;
+    std::vector<PhysicalDevice> keyboards;
+    for (const auto& dev : m_devices) {
+        if (dev.type == RIM_TYPEMOUSE) mice.push_back(dev);
+        if (dev.type == RIM_TYPEKEYBOARD) keyboards.push_back(dev);
+    }
+
+    for (const auto& dev : m_devices) {
+        if (dev.type == RIM_TYPEMOUSE && !pc.mouse_hwid.empty()) {
+            if (dev.hardware_id.find(pc.mouse_hwid) != std::wstring::npos ||
+                pc.mouse_hwid.find(dev.hardware_id) != std::wstring::npos) {
+                ps.mouse_handle = dev.handle;
+            }
+        }
+        if (dev.type == RIM_TYPEKEYBOARD && !pc.keyboard_hwid.empty()) {
+            if (dev.hardware_id.find(pc.keyboard_hwid) != std::wstring::npos ||
+                pc.keyboard_hwid.find(dev.hardware_id) != std::wstring::npos) {
+                ps.keyboard_handle = dev.handle;
+            }
+        }
+    }
+
+    size_t idx = pc.id - 1;
+    if (ps.mouse_handle == NULL && idx < mice.size()) {
+        ps.mouse_handle = mice[idx].handle;
+    }
+    if (ps.keyboard_handle == NULL && idx < keyboards.size()) {
+        ps.keyboard_handle = keyboards[idx].handle;
+    }
+
+    m_persons.push_back(ps);
+}
+
+void DeviceManager::RemoveLastPerson() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_persons.empty()) {
+        m_persons.pop_back();
+    }
+}
+
 std::vector<PersonState> DeviceManager::GetPersons() const {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_persons;

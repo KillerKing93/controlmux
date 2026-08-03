@@ -4,12 +4,16 @@
  */
 
 #include "gui_win32.hpp"
+#include "overlay_renderer.hpp"
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <algorithm>
 
 GuiWin32* GuiWin32::s_gui_instance = nullptr;
+
+class OverlayRenderer;
+extern OverlayRenderer* g_renderer;
 
 // ── Debug log ──────────────────────────────────────────────────────────────
 static std::wofstream g_dbg;
@@ -472,9 +476,11 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
             // Auto-scroll to bottom to show new entry
             int maxOff = (int)self->m_config.persons.size() - LIST_ROWS;
             self->m_scroll_offset = std::max(0, maxOff);
-            self->m_dev_mgr.SyncWithConfig(self->m_config);
+            self->m_dev_mgr.AddPerson(p);
             ConfigManager::Save(L"controlmux_config.ini", self->m_config);
+            if (g_renderer) g_renderer->Render(self->m_dev_mgr.GetPersons(), self->m_config.active_person_id);
             InvalidateRect(hwnd, NULL, FALSE);
+            UpdateWindow(hwnd);
             break;
         }
 
@@ -486,9 +492,11 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
             self->m_config.persons.pop_back();
             int maxOff = (int)self->m_config.persons.size() - LIST_ROWS;
             self->m_scroll_offset = std::max(0, std::min(self->m_scroll_offset, maxOff));
-            self->m_dev_mgr.SyncWithConfig(self->m_config);
+            self->m_dev_mgr.RemoveLastPerson();
             ConfigManager::Save(L"controlmux_config.ini", self->m_config);
+            if (g_renderer) g_renderer->Render(self->m_dev_mgr.GetPersons(), self->m_config.active_person_id);
             InvalidateRect(hwnd, NULL, FALSE);
+            UpdateWindow(hwnd);
             break;
         }
 

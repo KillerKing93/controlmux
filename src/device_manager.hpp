@@ -73,6 +73,8 @@ public:
      * @brief Synchronizes runtime PersonState handles with AppConfig persistent settings.
      */
     void SyncWithConfig(AppConfig& config);
+    void AddPerson(const PersonConfig& pc);
+    void RemoveLastPerson();
     
     PersonState* GetPersonByMouseHandle(HANDLE hDevice);
     PersonState* GetPersonByKeyboardHandle(HANDLE hDevice);
