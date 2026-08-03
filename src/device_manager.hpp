@@ -77,7 +77,7 @@ public:
     PersonState* GetPersonByMouseHandle(HANDLE hDevice);
     PersonState* GetPersonByKeyboardHandle(HANDLE hDevice);
     PersonState* GetPersonById(int id);
-    std::vector<PersonState>& GetPersons() { return m_persons; }
+    std::vector<PersonState> GetPersons() const;
 
     // Interactive Device Pairing Wizard
     void StartPairing(int person_id, bool is_mouse);

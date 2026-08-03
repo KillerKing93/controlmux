@@ -184,7 +184,13 @@ void DeviceManager::SyncWithConfig(AppConfig& config) {
     }
 }
 
+std::vector<PersonState> DeviceManager::GetPersons() const {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_persons;
+}
+
 PersonState* DeviceManager::GetPersonByMouseHandle(HANDLE hDevice) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     for (auto& person : m_persons) {
         if (person.mouse_handle == hDevice) return &person;
     }
@@ -194,6 +200,7 @@ PersonState* DeviceManager::GetPersonByMouseHandle(HANDLE hDevice) {
 }
 
 PersonState* DeviceManager::GetPersonByKeyboardHandle(HANDLE hDevice) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     for (auto& person : m_persons) {
         if (person.keyboard_handle == hDevice) return &person;
     }
@@ -203,6 +210,7 @@ PersonState* DeviceManager::GetPersonByKeyboardHandle(HANDLE hDevice) {
 }
 
 PersonState* DeviceManager::GetPersonById(int id) {
+    std::lock_guard<std::mutex> lock(m_mutex);
     for (auto& person : m_persons) {
         if (person.id == id) return &person;
     }
