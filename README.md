@@ -118,6 +118,5 @@ cmake --build .
 
 Copyright (c) 2026 **Alif Nurhidayat** (`alifnurhidayatwork@gmail.com`).
 
-- **Personal & Non-Commercial Use**: Completely **FREE** to use, modify, and study for personal, research, or educational purposes.
-- **Share-Alike Requirement**: Any modifications, forks, or derivative works must be publicly shared open-source under the exact same license terms.
-- **Corporate & Commercial Royalty**: Commercial entities, corporations, and revenue-generating organizations **must pay a commercial royalty license** to Alif Nurhidayat (`alifnurhidayatwork@gmail.com`) to deploy, integrate, or use ControlMux in business environments.
+- **Personal, Educational, & Non-Commercial Use**: 100% **FREE** for personal, research, or educational purposes under share-alike terms.
+- **Commercial & Corporate Use**: Requires a commercial royalty license (**$29.00 USD per workstation seat** or **7.5% gross royalty fee** for embedded/bundled products). Contact Alif Nurhidayat (`alifnurhidayatwork@gmail.com`) for corporate licenses.
