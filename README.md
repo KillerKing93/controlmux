@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="ControlMux App Logo" width="480">
+  <img src="https://raw.githubusercontent.com/KillerKing93/controlmux/master/assets/logo.svg" alt="ControlMux App Logo" width="480">
 </p>
 
 <h1 align="center">ControlMux 🖱️⌨️</h1>
@@ -38,7 +38,7 @@ The ControlMux logo is designed as a **1:1 square multi-layer SVG vector graphic
 
 - 📄 **Combined Layered Vector**: [`assets/logo.svg`](file:///d:/CraftThingy/controlmux/assets/logo.svg) (contains labeled `<g id="layer-01-background">`, `<g id="layer-03-cyan-cursor">` layer groups)
 - 📂 **Standalone Layer SVGs**: [`assets/logo_layers/`](file:///d:/CraftThingy/controlmux/assets/logo_layers/)
-  - `01_background.svg` (Dark gradient background, corner bracket edge accents & tech desktop grid)
+  - `01_background.svg` (Dark gradient background, corner bracket edge accents, honeycomb tech mesh & desktop grid)
   - `02_circuit_core.svg` (Quantum multiplexer core node & circuit trails)
   - `03_cyan_cursor.svg` (Person 1 cyan neon 3D pointer & glassmorphic badge)
   - `04_magenta_cursor.svg` (Person 2 magenta neon 3D pointer & glassmorphic badge)
