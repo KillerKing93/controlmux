@@ -50,6 +50,11 @@ void DeviceManager::RefreshDevices() {
 std::wstring DeviceManager::GetHardwareId(HANDLE hDevice) {
     if (hDevice == NULL) return L"";
 
+    auto it = m_handle_to_hwid_cache.find(hDevice);
+    if (it != m_handle_to_hwid_cache.end()) {
+        return it->second;
+    }
+
     UINT name_size = 0;
     GetRawInputDeviceInfoW(hDevice, RIDI_DEVICENAME, NULL, &name_size);
     if (name_size == 0) return L"";
@@ -66,17 +71,18 @@ std::wstring DeviceManager::GetHardwareId(HANDLE hDevice) {
     if (pos == std::wstring::npos) pos = raw_name.find(L"ACPI#");
     if (pos == std::wstring::npos) pos = raw_name.find(L"USB#");
 
+    std::wstring hwid = raw_name;
     if (pos != std::wstring::npos) {
-        std::wstring hwid = raw_name.substr(pos);
+        hwid = raw_name.substr(pos);
         // Trim trailing GUID substring #{...}
         size_t hash_pos = hwid.find(L"#{");
         if (hash_pos != std::wstring::npos) {
             hwid = hwid.substr(0, hash_pos);
         }
-        return hwid;
     }
 
-    return raw_name;
+    m_handle_to_hwid_cache[hDevice] = hwid;
+    return hwid;
 }
 
 std::wstring DeviceManager::GetFriendlyDeviceName(HANDLE hDevice, DWORD type) {
@@ -110,25 +116,32 @@ std::vector<PhysicalDevice> DeviceManager::GetConnectedKeyboards() const {
 void DeviceManager::SyncWithConfig(AppConfig& config) {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    // Refresh devices directly (without re-locking, we already hold m_mutex)
-    m_devices.clear();
-    m_handle_to_hwid_cache.clear();
-    UINT num_devices = 0;
-    if (GetRawInputDeviceList(NULL, &num_devices, sizeof(RAWINPUTDEVICELIST)) == 0 && num_devices > 0) {
-        std::vector<RAWINPUTDEVICELIST> raw_list(num_devices);
-        if (GetRawInputDeviceList(raw_list.data(), &num_devices, sizeof(RAWINPUTDEVICELIST)) != (UINT)-1) {
-            for (UINT i = 0; i < num_devices; ++i) {
-                if (raw_list[i].dwType == RIM_TYPEMOUSE || raw_list[i].dwType == RIM_TYPEKEYBOARD) {
-                    PhysicalDevice dev;
-                    dev.handle = raw_list[i].hDevice;
-                    dev.type   = raw_list[i].dwType;
-                    dev.hardware_id = GetHardwareId(dev.handle);
-                    dev.name        = GetFriendlyDeviceName(dev.handle, dev.type);
-                    m_handle_to_hwid_cache[dev.handle] = dev.hardware_id;
-                    m_devices.push_back(dev);
+    // Query devices if not cached
+    if (m_devices.empty()) {
+        UINT num_devices = 0;
+        if (GetRawInputDeviceList(NULL, &num_devices, sizeof(RAWINPUTDEVICELIST)) == 0 && num_devices > 0) {
+            std::vector<RAWINPUTDEVICELIST> raw_list(num_devices);
+            if (GetRawInputDeviceList(raw_list.data(), &num_devices, sizeof(RAWINPUTDEVICELIST)) != (UINT)-1) {
+                for (UINT i = 0; i < num_devices; ++i) {
+                    if (raw_list[i].dwType == RIM_TYPEMOUSE || raw_list[i].dwType == RIM_TYPEKEYBOARD) {
+                        PhysicalDevice dev;
+                        dev.handle = raw_list[i].hDevice;
+                        dev.type   = raw_list[i].dwType;
+                        dev.hardware_id = GetHardwareId(dev.handle);
+                        dev.name        = GetFriendlyDeviceName(dev.handle, dev.type);
+                        m_devices.push_back(dev);
+                    }
                 }
             }
         }
+    }
+
+    // Pre-filter connected mice and keyboards
+    std::vector<PhysicalDevice> mice;
+    std::vector<PhysicalDevice> keyboards;
+    for (const auto& dev : m_devices) {
+        if (dev.type == RIM_TYPEMOUSE) mice.push_back(dev);
+        if (dev.type == RIM_TYPEKEYBOARD) keyboards.push_back(dev);
     }
 
     m_persons.clear();
@@ -144,29 +157,21 @@ void DeviceManager::SyncWithConfig(AppConfig& config) {
         ps.keyboard_hwid = pc.keyboard_hwid;
 
         // Position initial virtual cursors evenly across screen
-        ps.cursor_x = (virtual_screen_w / (config.persons.size() + 1)) * pc.id;
+        ps.cursor_x = (virtual_screen_w / ((int)config.persons.size() + 1)) * pc.id;
         ps.cursor_y = virtual_screen_h / 2;
 
         // Match hardware device handles by ID or auto-assign by enumeration order
-        auto mice = GetConnectedMice();
-        auto keyboards = GetConnectedKeyboards();
-
-        for (size_t i = 0; i < m_devices.size(); ++i) {
-            const auto& dev = m_devices[i];
-            if (dev.type == RIM_TYPEMOUSE) {
-                if (!pc.mouse_hwid.empty()) {
-                    if (dev.hardware_id.find(pc.mouse_hwid) != std::wstring::npos ||
-                        pc.mouse_hwid.find(dev.hardware_id) != std::wstring::npos) {
-                        ps.mouse_handle = dev.handle;
-                    }
+        for (const auto& dev : m_devices) {
+            if (dev.type == RIM_TYPEMOUSE && !pc.mouse_hwid.empty()) {
+                if (dev.hardware_id.find(pc.mouse_hwid) != std::wstring::npos ||
+                    pc.mouse_hwid.find(dev.hardware_id) != std::wstring::npos) {
+                    ps.mouse_handle = dev.handle;
                 }
             }
-            if (dev.type == RIM_TYPEKEYBOARD) {
-                if (!pc.keyboard_hwid.empty()) {
-                    if (dev.hardware_id.find(pc.keyboard_hwid) != std::wstring::npos ||
-                        pc.keyboard_hwid.find(dev.hardware_id) != std::wstring::npos) {
-                        ps.keyboard_handle = dev.handle;
-                    }
+            if (dev.type == RIM_TYPEKEYBOARD && !pc.keyboard_hwid.empty()) {
+                if (dev.hardware_id.find(pc.keyboard_hwid) != std::wstring::npos ||
+                    pc.keyboard_hwid.find(dev.hardware_id) != std::wstring::npos) {
+                    ps.keyboard_handle = dev.handle;
                 }
             }
         }

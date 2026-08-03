@@ -472,6 +472,7 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
             // Auto-scroll to bottom to show new entry
             int maxOff = (int)self->m_config.persons.size() - LIST_ROWS;
             self->m_scroll_offset = std::max(0, maxOff);
+            self->m_dev_mgr.SyncWithConfig(self->m_config);
             ConfigManager::Save(L"controlmux_config.ini", self->m_config);
             InvalidateRect(hwnd, NULL, FALSE);
             break;
@@ -485,6 +486,7 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
             self->m_config.persons.pop_back();
             int maxOff = (int)self->m_config.persons.size() - LIST_ROWS;
             self->m_scroll_offset = std::max(0, std::min(self->m_scroll_offset, maxOff));
+            self->m_dev_mgr.SyncWithConfig(self->m_config);
             ConfigManager::Save(L"controlmux_config.ini", self->m_config);
             InvalidateRect(hwnd, NULL, FALSE);
             break;
