@@ -1,0 +1,5 @@
+# ControlMux Linux udev rules
+# Grants non-root access to raw input event devices (/dev/input/event*) for multi-person control
+
+KERNEL=="event*", SUBSYSTEM=="input", MODE="0666", TAG+="uaccess"
+KERNEL=="uinput", SUBSYSTEM=="misc", MODE="0666", TAG+="uaccess"
