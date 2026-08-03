@@ -45,11 +45,25 @@ void FocusRouter::OnPersonMouseMove(PersonState& person, int dx, int dy, AppConf
         person.cursor_x += dx;
         person.cursor_y += dy;
 
-        // Clamp coordinates to stay within visible virtual screen bounds
-        if (person.cursor_x < screen_x) person.cursor_x = screen_x;
-        if (person.cursor_x >= screen_x + screen_w) person.cursor_x = screen_x + screen_w - 1;
-        if (person.cursor_y < screen_y) person.cursor_y = screen_y;
-        if (person.cursor_y >= screen_y + screen_h) person.cursor_y = screen_y + screen_h - 1;
+        // Clamp coordinates within the specific physical monitor bounds it currently occupies
+        POINT pt = { person.cursor_x, person.cursor_y };
+        HMONITOR hMon = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+        if (hMon) {
+            MONITORINFO mi = {};
+            mi.cbSize = sizeof(mi);
+            if (GetMonitorInfoW(hMon, &mi)) {
+                if (person.cursor_x < mi.rcMonitor.left) person.cursor_x = mi.rcMonitor.left;
+                if (person.cursor_x >= mi.rcMonitor.right) person.cursor_x = mi.rcMonitor.right - 1;
+                if (person.cursor_y < mi.rcMonitor.top) person.cursor_y = mi.rcMonitor.top;
+                if (person.cursor_y >= mi.rcMonitor.bottom) person.cursor_y = mi.rcMonitor.bottom - 1;
+            }
+        } else {
+            // Global virtual screen fallback
+            if (person.cursor_x < screen_x) person.cursor_x = screen_x;
+            if (person.cursor_x >= screen_x + screen_w) person.cursor_x = screen_x + screen_w - 1;
+            if (person.cursor_y < screen_y) person.cursor_y = screen_y;
+            if (person.cursor_y >= screen_y + screen_h) person.cursor_y = screen_y + screen_h - 1;
+        }
     }
 
     person.target_hwnd = FindTargetWindowAt(person.cursor_x, person.cursor_y);

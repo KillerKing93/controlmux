@@ -38,6 +38,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR, int) {
+    // Enable Per-Monitor DPI Awareness V2 so coordinates across different monitor dimensions/DPI match physical pixels 1:1
+    HMODULE hUser32 = GetModuleHandleW(L"user32.dll");
+    if (hUser32) {
+        typedef BOOL (WINAPI *PFN_SetProcessDpiAwarenessContext)(HANDLE);
+        auto setDpiAware = (PFN_SetProcessDpiAwarenessContext)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
+        if (setDpiAware) {
+            setDpiAware((HANDLE)-4); // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+        } else {
+            SetProcessDPIAware();
+        }
+    }
+
     g_log.open(L"cmux_startup.log", std::ios::trunc);
     LOG(L"=== ControlMux startup ===");
 
