@@ -123,7 +123,7 @@ void GuiWin32::OpenPairingWindow(HINSTANCE hInstance) {
     }
     msg += L"\nControlMux is running in your System Tray (bottom-right area).\nRight-click tray icon to switch modes or toggle active status.";
 
-    MessageBoxW(m_hwndMain, msg.c_str(), L"ControlMux Control Center", MB_OK | MB_ICONINFORMATION);
+    MessageBoxW(NULL, msg.c_str(), L"ControlMux Control Center", MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND | MB_TOPMOST);
 }
 
 void GuiWin32::Shutdown() {

@@ -127,20 +127,37 @@ void DeviceManager::SyncWithConfig(AppConfig& config) {
         ps.cursor_x = (virtual_screen_w / (config.persons.size() + 1)) * pc.id;
         ps.cursor_y = virtual_screen_h / 2;
 
-        // Match hardware device handles by ID
-        for (const auto& dev : m_devices) {
-            if (dev.type == RIM_TYPEMOUSE && !pc.mouse_hwid.empty()) {
-                if (dev.hardware_id.find(pc.mouse_hwid) != std::wstring::npos ||
-                    pc.mouse_hwid.find(dev.hardware_id) != std::wstring::npos) {
-                    ps.mouse_handle = dev.handle;
+        // Match hardware device handles by ID or auto-assign by enumeration order
+        auto mice = GetConnectedMice();
+        auto keyboards = GetConnectedKeyboards();
+
+        for (size_t i = 0; i < m_devices.size(); ++i) {
+            const auto& dev = m_devices[i];
+            if (dev.type == RIM_TYPEMOUSE) {
+                if (!pc.mouse_hwid.empty()) {
+                    if (dev.hardware_id.find(pc.mouse_hwid) != std::wstring::npos ||
+                        pc.mouse_hwid.find(dev.hardware_id) != std::wstring::npos) {
+                        ps.mouse_handle = dev.handle;
+                    }
                 }
             }
-            if (dev.type == RIM_TYPEKEYBOARD && !pc.keyboard_hwid.empty()) {
-                if (dev.hardware_id.find(pc.keyboard_hwid) != std::wstring::npos ||
-                    pc.keyboard_hwid.find(dev.hardware_id) != std::wstring::npos) {
-                    ps.keyboard_handle = dev.handle;
+            if (dev.type == RIM_TYPEKEYBOARD) {
+                if (!pc.keyboard_hwid.empty()) {
+                    if (dev.hardware_id.find(pc.keyboard_hwid) != std::wstring::npos ||
+                        pc.keyboard_hwid.find(dev.hardware_id) != std::wstring::npos) {
+                        ps.keyboard_handle = dev.handle;
+                    }
                 }
             }
+        }
+
+        // Auto-assign unassigned handles by index if empty
+        size_t idx = pc.id - 1;
+        if (ps.mouse_handle == NULL && idx < mice.size()) {
+            ps.mouse_handle = mice[idx].handle;
+        }
+        if (ps.keyboard_handle == NULL && idx < keyboards.size()) {
+            ps.keyboard_handle = keyboards[idx].handle;
         }
 
         m_persons.push_back(ps);
