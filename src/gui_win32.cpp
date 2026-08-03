@@ -7,8 +7,14 @@
 #include "gui_win32.hpp"
 #include <string>
 #include <sstream>
+#include <fstream>
+#include <ctime>
 
 GuiWin32* GuiWin32::s_gui_instance = nullptr;
+
+// Debug log to file
+static std::wofstream g_dbg;
+#define DBG(x) do { if(g_dbg.is_open()){g_dbg<<x<<L"\n";g_dbg.flush();} } while(0)
 
 // ── colours ────────────────────────────────────────────────────────────────
 static const COLORREF CLR_BG       = RGB(15,  17,  26);   // near-black navy
@@ -199,75 +205,89 @@ GuiWin32::~GuiWin32() {
 }
 
 bool GuiWin32::Initialize(HINSTANCE hInstance, HWND hwndMsg) {
+    g_dbg.open(L"cmux_gui.log", std::ios::trunc);
+    DBG(L"=== GuiWin32::Initialize ===");
     m_hwndMsg   = hwndMsg;
     m_hInstance = hInstance;
+    DBG(L"hInstance=" << (ULONG_PTR)hInstance << L" hwndMsg=" << (ULONG_PTR)hwndMsg);
 
     // ── Try system tray first (only if Explorer taskbar exists) ──
-    HWND hTray = FindWindowW(L"Shell_TrayWnd", NULL);
-    if (hTray) {
-        m_tray_available = true;
-        HICON hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(101));
-        if (!hIcon) hIcon = (HICON)LoadImageW(NULL, L"assets/app_icon.ico",
-                                               IMAGE_ICON, 16, 16, LR_LOADFROMFILE);
-        if (!hIcon) hIcon = LoadIcon(NULL, IDI_APPLICATION);
-
-        ZeroMemory(&m_nid, sizeof(m_nid));
-        m_nid.cbSize           = sizeof(NOTIFYICONDATAW);
-        m_nid.hWnd             = hwndMsg;
-        m_nid.uID              = 1;
-        m_nid.uFlags           = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-        m_nid.uCallbackMessage = WM_TRAYICON;
-        m_nid.hIcon            = hIcon;
-        wcscpy_s(m_nid.szTip, L"ControlMux — Multi-Person Input Engine");
-
-        if (Shell_NotifyIconW(NIM_ADD, &m_nid)) {
-            m_tray_added = true;
-        }
-    }
+    HWND hTrayWnd = FindWindowW(L"Shell_TrayWnd", NULL);
+    DBG(L"Shell_TrayWnd: " << (hTrayWnd ? L"FOUND" : L"NOT FOUND"));
 
     // ── Always open control panel window ──
+    DBG(L"Calling OpenControlPanel...");
     OpenControlPanel();
+    DBG(L"OpenControlPanel returned. m_hwndPanel=" << (ULONG_PTR)m_hwndPanel);
     return true;
 }
 
 void GuiWin32::OpenControlPanel() {
+    DBG(L"--- OpenControlPanel ---");
+
     if (m_hwndPanel && IsWindow(m_hwndPanel)) {
+        DBG(L"Panel already exists, bringing to front");
         SetForegroundWindow(m_hwndPanel);
         return;
     }
 
-    // Register panel class if not done yet
+    // Register panel class
     WNDCLASSEXW wc = {};
     wc.cbSize        = sizeof(wc);
     wc.lpfnWndProc   = PanelWndProc;
     wc.hInstance     = m_hInstance;
-    wc.hbrBackground = CreateSolidBrush(CLR_BG);
+    wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wc.lpszClassName = L"ControlMuxPanel";
     wc.hIcon         = LoadIcon(m_hInstance, MAKEINTRESOURCE(101));
     wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    RegisterClassExW(&wc); // OK if already registered
+    ATOM atom = RegisterClassExW(&wc);
+    DBG(L"RegisterClassExW: atom=" << atom << L" LastError=" << GetLastError());
 
-    // Centre on the primary monitor's work area (not SM_CXSCREEN which can be wrong on multi-monitor)
-    POINT ptPrimary = {1, 1};  // a point guaranteed on the primary monitor
+    // Get primary monitor work area
+    POINT ptPrimary = {1, 1};
     HMONITOR hMon = MonitorFromPoint(ptPrimary, MONITOR_DEFAULTTOPRIMARY);
     MONITORINFO mi = {};
     mi.cbSize = sizeof(mi);
-    GetMonitorInfoW(hMon, &mi);
+    BOOL miOk = GetMonitorInfoW(hMon, &mi);
+    DBG(L"GetMonitorInfo: ok=" << miOk
+        << L" work=[" << mi.rcWork.left << L"," << mi.rcWork.top
+        << L"," << mi.rcWork.right << L"," << mi.rcWork.bottom << L"]");
+
     int wx = mi.rcWork.left + (mi.rcWork.right  - mi.rcWork.left - PANEL_W) / 2;
     int wy = mi.rcWork.top  + (mi.rcWork.bottom - mi.rcWork.top  - PANEL_H) / 2;
+    DBG(L"Panel position: x=" << wx << L" y=" << wy << L" w=" << PANEL_W << L" h=" << PANEL_H);
 
+    SetLastError(0);
     m_hwndPanel = CreateWindowExW(
         WS_EX_TOPMOST | WS_EX_APPWINDOW,
         L"ControlMuxPanel",
-        L"ControlMux — Control Center",
+        L"ControlMux \u2014 Control Center",
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         wx, wy, PANEL_W, PANEL_H,
-        NULL, NULL, m_hInstance, this);  // pass 'this' as lpParam
+        NULL, NULL, m_hInstance, this);
+
+    DBG(L"CreateWindowExW: hwnd=" << (ULONG_PTR)m_hwndPanel << L" err=" << GetLastError());
 
     if (m_hwndPanel) {
-        ShowWindow(m_hwndPanel, SW_SHOW);
+        // Force the window visible even if this process doesn't currently own foreground focus.
+        // Windows blocks SetForegroundWindow for background processes, so we use multiple techniques.
+        ShowWindow(m_hwndPanel, SW_SHOWNORMAL);
         UpdateWindow(m_hwndPanel);
+
+        // Force to top of z-order
+        SetWindowPos(m_hwndPanel, HWND_TOPMOST,
+                     wx, wy, PANEL_W, PANEL_H,
+                     SWP_SHOWWINDOW | SWP_NOACTIVATE);
+
+        // Grant ourselves foreground permission then claim it
+        AllowSetForegroundWindow(GetCurrentProcessId());
+        SwitchToThisWindow(m_hwndPanel, TRUE);
         SetForegroundWindow(m_hwndPanel);
+        BringWindowToTop(m_hwndPanel);
+
+        DBG(L"Panel shown and forced to front.");
+    } else {
+        DBG(L"ERROR: CreateWindowExW returned NULL");
     }
 }
 

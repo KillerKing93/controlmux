@@ -1,0 +1,11 @@
+=== GuiWin32::Initialize ===
+hInstance=140699671592960 hwndMsg=2034572
+Shell_TrayWnd: NOT FOUND
+Calling OpenControlPanel...
+--- OpenControlPanel ---
+RegisterClassExW: atom=50142 LastError=0
+GetMonitorInfo: ok=1 work=[0,0,2048,1104]
+Panel position: x=834 y=412 w=380 h=280
+CreateWindowExW: hwnd=2165860 err=0
+Panel shown and forced to front.
+OpenControlPanel returned. m_hwndPanel=2165860

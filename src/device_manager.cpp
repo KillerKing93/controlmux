@@ -109,7 +109,27 @@ std::vector<PhysicalDevice> DeviceManager::GetConnectedKeyboards() const {
  */
 void DeviceManager::SyncWithConfig(AppConfig& config) {
     std::lock_guard<std::mutex> lock(m_mutex);
-    RefreshDevices();
+
+    // Refresh devices directly (without re-locking, we already hold m_mutex)
+    m_devices.clear();
+    m_handle_to_hwid_cache.clear();
+    UINT num_devices = 0;
+    if (GetRawInputDeviceList(NULL, &num_devices, sizeof(RAWINPUTDEVICELIST)) == 0 && num_devices > 0) {
+        std::vector<RAWINPUTDEVICELIST> raw_list(num_devices);
+        if (GetRawInputDeviceList(raw_list.data(), &num_devices, sizeof(RAWINPUTDEVICELIST)) != (UINT)-1) {
+            for (UINT i = 0; i < num_devices; ++i) {
+                if (raw_list[i].dwType == RIM_TYPEMOUSE || raw_list[i].dwType == RIM_TYPEKEYBOARD) {
+                    PhysicalDevice dev;
+                    dev.handle = raw_list[i].hDevice;
+                    dev.type   = raw_list[i].dwType;
+                    dev.hardware_id = GetHardwareId(dev.handle);
+                    dev.name        = GetFriendlyDeviceName(dev.handle, dev.type);
+                    m_handle_to_hwid_cache[dev.handle] = dev.hardware_id;
+                    m_devices.push_back(dev);
+                }
+            }
+        }
+    }
 
     m_persons.clear();
     int virtual_screen_w = GetSystemMetrics(SM_CXSCREEN);
