@@ -1,3 +1,8 @@
+/**
+ * @file gui_win32.cpp
+ * @brief Implementation of system tray icon, context menu events, and pairing UI.
+ */
+
 #include "gui_win32.hpp"
 #include <iostream>
 
@@ -12,6 +17,9 @@ GuiWin32::~GuiWin32() {
     Shutdown();
 }
 
+/**
+ * Registers system tray icon via Shell_NotifyIconW.
+ */
 bool GuiWin32::Initialize(HINSTANCE hInstance, HWND hwndMain) {
     m_hwndMain = hwndMain;
 
@@ -27,6 +35,9 @@ bool GuiWin32::Initialize(HINSTANCE hInstance, HWND hwndMain) {
     return true;
 }
 
+/**
+ * Dynamically updates tray tooltip with active status and mode.
+ */
 void GuiWin32::UpdateTrayTooltip() {
     std::wstring status = L"ControlMux - ";
     status += m_config.enabled ? L"Active (" : L"Paused (";
@@ -35,6 +46,9 @@ void GuiWin32::UpdateTrayTooltip() {
     Shell_NotifyIconW(NIM_MODIFY, &m_nid);
 }
 
+/**
+ * Displays popup menu on right-click on tray icon.
+ */
 void GuiWin32::ShowContextMenu(HWND hwnd) {
     POINT pt;
     GetCursorPos(&pt);
@@ -84,8 +98,11 @@ void GuiWin32::ShowContextMenu(HWND hwnd) {
     }
 }
 
+/**
+ * Displays device pairing information dialog.
+ */
 void GuiWin32::OpenPairingWindow(HINSTANCE hInstance) {
-    std::wstring msg = L"ControlMux Device Pairing:\n\n";
+    std::wstring msg = L"ControlMux Device Profiles:\n\n";
     for (const auto& p : m_config.persons) {
         msg += p.name + L":\n";
         msg += L"  Mouse: " + (p.mouse_hwid.empty() ? L"(Unassigned - Auto)" : p.mouse_hwid) + L"\n";

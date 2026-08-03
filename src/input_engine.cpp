@@ -1,3 +1,8 @@
+/**
+ * @file input_engine.cpp
+ * @brief Implementation of Raw Input device registration and input message processing.
+ */
+
 #include "input_engine.hpp"
 #include <iostream>
 
@@ -12,18 +17,21 @@ InputEngine::~InputEngine() {
     Shutdown();
 }
 
+/**
+ * Registers mouse and keyboard devices with Win32 RegisterRawInputDevices using RIDEV_INPUTSINK.
+ */
 bool InputEngine::Initialize(HWND hwndMessage) {
     m_hwnd = hwndMessage;
 
     RAWINPUTDEVICE rid[2];
 
-    // Mouse
+    // Generic Desktop Mouse (Usage Page 0x01, Usage 0x02)
     rid[0].usUsagePage = 0x01;
     rid[0].usUsage = 0x02;
     rid[0].dwFlags = RIDEV_INPUTSINK;
     rid[0].hwndTarget = hwndMessage;
 
-    // Keyboard
+    // Generic Desktop Keyboard (Usage Page 0x01, Usage 0x06)
     rid[1].usUsagePage = 0x01;
     rid[1].usUsage = 0x06;
     rid[1].dwFlags = RIDEV_INPUTSINK;
@@ -33,12 +41,15 @@ bool InputEngine::Initialize(HWND hwndMessage) {
         return false;
     }
 
-    // Install low-level keyboard hook
+    // Install WH_KEYBOARD_LL hook for keystroke filtering
     m_keyboard_hook = SetWindowsHookExW(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
 
     return true;
 }
 
+/**
+ * Handles WM_INPUT messages, extracting RAWINPUT structs and forwarding to FocusRouter & OverlayRenderer.
+ */
 LPARAM InputEngine::ProcessRawInput(WPARAM wParam, LPARAM lParam) {
     UINT dwSize = 0;
     GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
@@ -51,7 +62,7 @@ LPARAM InputEngine::ProcessRawInput(WPARAM wParam, LPARAM lParam) {
 
     RAWINPUT* raw = (RAWINPUT*)lpb.data();
 
-    // Check if pairing wizard is waiting for input
+    // Check if device pairing wizard is listening
     if (m_dev_mgr.IsPairing()) {
         if (m_dev_mgr.OnInputReceivedForPairing(raw->header.hDevice, raw->header.dwType, m_config)) {
             ConfigManager::Save(L"controlmux_config.ini", m_config);
@@ -74,7 +85,7 @@ LPARAM InputEngine::ProcessRawInput(WPARAM wParam, LPARAM lParam) {
                 m_router.OnPersonMouseButton(*person, button_flags, m_config);
             }
 
-            // Redraw virtual cursor overlay
+            // Trigger overlay render update
             m_renderer.Render(m_dev_mgr.GetPersons(), m_router.GetActivePersonId());
         }
     } else if (raw->header.dwType == RIM_TYPEKEYBOARD) {
@@ -93,8 +104,7 @@ LPARAM InputEngine::ProcessRawInput(WPARAM wParam, LPARAM lParam) {
 
 LRESULT CALLBACK InputEngine::LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode >= 0 && s_instance && s_instance->m_config.enabled) {
-        KBDLLHOOKSTRUCT* pKbd = (KBDLLHOOKSTRUCT*)lParam;
-        // In switched focus mode, if a secondary user typed, low level hook allows filtering out extra OS keystroke echoes
+        // Low level keyboard filtering procedure
     }
     return CallNextHookEx(NULL, nCode, wParam, lParam);
 }

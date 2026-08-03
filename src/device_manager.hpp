@@ -1,3 +1,8 @@
+/**
+ * @file device_manager.hpp
+ * @brief Device discovery, hardware ID extraction, and runtime Person state tracking.
+ */
+
 #ifndef CONTROLMUX_DEVICE_MANAGER_HPP
 #define CONTROLMUX_DEVICE_MANAGER_HPP
 
@@ -8,13 +13,19 @@
 #include <mutex>
 #include "config.hpp"
 
+/**
+ * @brief Information about a physical input device enumerated via Raw Input.
+ */
 struct PhysicalDevice {
-    HANDLE handle;
-    DWORD type; // RIM_TYPEMOUSE or RIM_TYPEKEYBOARD
-    std::wstring name;
-    std::wstring hardware_id;
+    HANDLE handle;             ///< Win32 device handle (hDevice)
+    DWORD type;                ///< RIM_TYPEMOUSE or RIM_TYPEKEYBOARD
+    std::wstring name;         ///< Friendly display name
+    std::wstring hardware_id;  ///< Extracted HID hardware instance ID string
 };
 
+/**
+ * @brief Live runtime state for an active Person profile.
+ */
 struct PersonState {
     int id;
     std::wstring name;
@@ -24,26 +35,43 @@ struct PersonState {
     HANDLE mouse_handle = NULL;
     HANDLE keyboard_handle = NULL;
 
-    int cursor_x = 0;
-    int cursor_y = 0;
-    bool mouse_down_left = false;
-    bool mouse_down_right = false;
-    bool mouse_down_middle = false;
-    HWND target_hwnd = NULL;
+    int cursor_x = 0;              ///< Virtual cursor X coordinate
+    int cursor_y = 0;              ///< Virtual cursor Y coordinate
+    bool mouse_down_left = false;  ///< Left button state
+    bool mouse_down_right = false; ///< Right button state
+    bool mouse_down_middle = false;///< Middle button state
+    HWND target_hwnd = NULL;       ///< Currently targeted window handle under virtual cursor
 };
 
+/**
+ * @brief Manages enumeration, identification, and profile assignment of physical HID input devices.
+ */
 class DeviceManager {
 public:
     DeviceManager();
     ~DeviceManager();
 
+    /**
+     * @brief Queries Win32 Raw Input API to enumerate all connected physical mice and keyboards.
+     */
     void RefreshDevices();
+
     std::vector<PhysicalDevice> GetConnectedMice() const;
     std::vector<PhysicalDevice> GetConnectedKeyboards() const;
 
+    /**
+     * @brief Resolves a runtime Win32 device handle (HANDLE) to its unique HID hardware instance ID.
+     */
     std::wstring GetHardwareId(HANDLE hDevice);
+
+    /**
+     * @brief Returns a friendly human-readable label for a device handle.
+     */
     std::wstring GetFriendlyDeviceName(HANDLE hDevice, DWORD type);
 
+    /**
+     * @brief Synchronizes runtime PersonState handles with AppConfig persistent settings.
+     */
     void SyncWithConfig(AppConfig& config);
     
     PersonState* GetPersonByMouseHandle(HANDLE hDevice);
@@ -51,10 +79,14 @@ public:
     PersonState* GetPersonById(int id);
     std::vector<PersonState>& GetPersons() { return m_persons; }
 
-    // Pairing Wizard support
+    // Interactive Device Pairing Wizard
     void StartPairing(int person_id, bool is_mouse);
     void StopPairing();
     bool IsPairing() const { return m_pairing_active; }
+    
+    /**
+     * @brief Called when raw input arrives while the pairing wizard is active to bind the device.
+     */
     bool OnInputReceivedForPairing(HANDLE hDevice, DWORD type, AppConfig& config);
 
 private:

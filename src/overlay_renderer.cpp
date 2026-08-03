@@ -1,3 +1,8 @@
+/**
+ * @file overlay_renderer.cpp
+ * @brief Implementation of GDI+ transparent overlay window rendering for multi-cursor visualization.
+ */
+
 #include "overlay_renderer.hpp"
 #include <iostream>
 
@@ -13,7 +18,7 @@ OverlayRenderer::~OverlayRenderer() {
 LRESULT CALLBACK OverlayRenderer::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
     case WM_ERASEBKGND:
-        return 1;
+        return 1; // Prevent background erasing flicker
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
@@ -22,10 +27,14 @@ LRESULT CALLBACK OverlayRenderer::WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
     }
 }
 
+/**
+ * Creates the topmost click-through transparent layered window spanning all active monitors.
+ */
 bool OverlayRenderer::Initialize(HINSTANCE hInstance) {
     GdiplusStartupInput gdiplusStartupInput;
     GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
 
+    // Get total virtual screen area across all displays
     m_screen_x = GetSystemMetrics(SM_XVIRTUALSCREEN);
     m_screen_y = GetSystemMetrics(SM_YVIRTUALSCREEN);
     m_screen_w = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -41,6 +50,7 @@ bool OverlayRenderer::Initialize(HINSTANCE hInstance) {
 
     RegisterClassExW(&wc);
 
+    // Create layered, click-through, topmost window
     m_hwnd = CreateWindowExW(
         WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW,
         L"ControlMuxOverlayClass",
@@ -58,6 +68,9 @@ bool OverlayRenderer::Initialize(HINSTANCE hInstance) {
     return true;
 }
 
+/**
+ * Double-buffers and updates the alpha channel of the layered window via UpdateLayeredWindow.
+ */
 void OverlayRenderer::Render(const std::vector<PersonState>& persons, int active_person_id) {
     if (!m_hwnd) return;
 
@@ -67,7 +80,7 @@ void OverlayRenderer::Render(const std::vector<PersonState>& persons, int active
     BITMAPINFO bmi = { 0 };
     bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmi.bmiHeader.biWidth = m_screen_w;
-    bmi.bmiHeader.biHeight = -m_screen_h; // Top-down
+    bmi.bmiHeader.biHeight = -m_screen_h; // Top-down DIB
     bmi.bmiHeader.biPlanes = 1;
     bmi.bmiHeader.biBitCount = 32;
     bmi.bmiHeader.biCompression = BI_RGB;
@@ -80,9 +93,10 @@ void OverlayRenderer::Render(const std::vector<PersonState>& persons, int active
     graphics.SetSmoothingMode(SmoothingModeAntiAlias);
     graphics.SetTextRenderingHint(TextRenderingHintClearTypeGridFit);
 
-    // Clear background with fully transparent black (0x00000000)
+    // Clear buffer with 100% transparent black
     graphics.Clear(Color(0, 0, 0, 0));
 
+    // Render virtual cursors for each configured person profile
     for (const auto& person : persons) {
         DrawCursor(graphics, person, (person.id == active_person_id));
     }
@@ -105,6 +119,9 @@ void OverlayRenderer::Render(const std::vector<PersonState>& persons, int active
     ReleaseDC(NULL, hdcScreen);
 }
 
+/**
+ * Draws a colored pointer arrow, drop shadow, outline, and name badge pill tag.
+ */
 void OverlayRenderer::DrawCursor(Graphics& g, const PersonState& person, bool is_active) {
     int x = person.cursor_x - m_screen_x;
     int y = person.cursor_y - m_screen_y;
@@ -113,13 +130,13 @@ void OverlayRenderer::DrawCursor(Graphics& g, const PersonState& person, bool is
     Color outlineColor(255, 255, 255, 255);
     Color darkOutline(200, 0, 0, 0);
 
-    // Draw click ripple effect if mouse down
+    // Draw mouse button click ripple animation
     if (person.mouse_down_left || person.mouse_down_right) {
         Pen ripplePen(mainColor, 2.5f);
         g.DrawEllipse(&ripplePen, x - 12, y - 12, 24, 24);
     }
 
-    // Define cursor polygon shape (pointer arrow)
+    // Pointer arrow polygon vertices
     Point cursorPoints[] = {
         Point(x, y),
         Point(x + 5, y + 18),
@@ -133,21 +150,21 @@ void OverlayRenderer::DrawCursor(Graphics& g, const PersonState& person, bool is
     GraphicsPath path;
     path.AddPolygon(cursorPoints, 7);
 
-    // 1. Draw outer black drop shadow / stroke
+    // 1. Dark drop shadow stroke
     Pen shadowPen(darkOutline, 4.0f);
     shadowPen.SetLineJoin(LineJoinRound);
     g.DrawPath(&shadowPen, &path);
 
-    // 2. Draw white inner outline
+    // 2. White outline stroke
     Pen outlinePen(outlineColor, 2.0f);
     outlinePen.SetLineJoin(LineJoinRound);
     g.DrawPath(&outlinePen, &path);
 
-    // 3. Fill cursor body with person's custom color
+    // 3. Colored body fill
     SolidBrush fillBrush(mainColor);
     g.FillPath(&fillBrush, &path);
 
-    // 4. Draw Person Label Badge (e.g. "Person 1")
+    // 4. Name Badge Pill Tag (e.g., "Person 1 ★")
     Font font(L"Segoe UI", 9, FontStyleBold, UnitPixel);
     std::wstring badgeText = person.name + (is_active ? L" ★" : L"");
 
@@ -159,7 +176,6 @@ void OverlayRenderer::DrawCursor(Graphics& g, const PersonState& person, bool is
     int badgeX = x + 16;
     int badgeY = y + 16;
 
-    // Badge background pill shape
     SolidBrush badgeBg(Color(220, 20, 24, 30));
     Pen badgeBorder(mainColor, 1.5f);
 

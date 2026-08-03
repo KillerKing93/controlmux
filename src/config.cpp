@@ -1,24 +1,33 @@
+/**
+ * @file config.cpp
+ * @brief Implementation of configuration loading and saving routines.
+ */
+
 #include "config.hpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
-// Simple lightweight hand-coded config serializer (no heavy external libraries)
+/**
+ * Parses the custom key-value configuration file into an AppConfig instance.
+ */
 bool ConfigManager::Load(const std::wstring& filename, AppConfig& config) {
     std::wifstream infile(filename.c_str());
     if (!infile.is_open()) {
-        return false; // Uses default config
+        return false; // Uses default pre-initialized config if file doesn't exist
     }
 
     std::wstring line;
     PersonConfig* current_person = nullptr;
 
     while (std::getline(infile, line)) {
+        // Parse global settings
         if (line.find(L"enabled=") == 0) {
             config.enabled = (line.substr(8) == L"1");
         } else if (line.find(L"mode=") == 0) {
             config.mode = (RoutingMode)_wtoi(line.substr(5).c_str());
         } else if (line.find(L"[person]") == 0) {
+            // New Person block detected
             PersonConfig p;
             p.id = (int)config.persons.size() + 1;
             p.name = L"Person " + std::to_wstring(p.id);
@@ -26,6 +35,7 @@ bool ConfigManager::Load(const std::wstring& filename, AppConfig& config) {
             config.persons.push_back(p);
             current_person = &config.persons.back();
         } else if (current_person) {
+            // Parse person-specific attributes
             if (line.find(L"id=") == 0) {
                 current_person->id = _wtoi(line.substr(3).c_str());
             } else if (line.find(L"name=") == 0) {
@@ -42,6 +52,9 @@ bool ConfigManager::Load(const std::wstring& filename, AppConfig& config) {
     return true;
 }
 
+/**
+ * Writes the AppConfig state out to a clean key-value formatted text file.
+ */
 bool ConfigManager::Save(const std::wstring& filename, const AppConfig& config) {
     std::wofstream outfile(filename.c_str());
     if (!outfile.is_open()) return false;

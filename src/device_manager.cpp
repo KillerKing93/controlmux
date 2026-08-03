@@ -1,3 +1,8 @@
+/**
+ * @file device_manager.cpp
+ * @brief Implementation of device discovery, hardware ID extraction, and runtime Person state tracking.
+ */
+
 #include "device_manager.hpp"
 #include <algorithm>
 #include <iostream>
@@ -8,6 +13,9 @@ DeviceManager::DeviceManager() {
 
 DeviceManager::~DeviceManager() {}
 
+/**
+ * Enumerates all connected HID mouse and keyboard devices using GetRawInputDeviceList.
+ */
 void DeviceManager::RefreshDevices() {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_devices.clear();
@@ -36,6 +44,9 @@ void DeviceManager::RefreshDevices() {
     }
 }
 
+/**
+ * Queries GetRawInputDeviceInfoW to retrieve the unique HID device path and extracts the hardware ID.
+ */
 std::wstring DeviceManager::GetHardwareId(HANDLE hDevice) {
     if (hDevice == NULL) return L"";
 
@@ -49,14 +60,15 @@ std::wstring DeviceManager::GetHardwareId(HANDLE hDevice) {
     }
 
     std::wstring raw_name(name_buf.data());
-    // Normalize string e.g. \\?\HID#VID_046D&PID_C52B... -> HID#VID_046D&PID_C52B...
+    
+    // Extract hardware instance ID string (e.g. HID#VID_046D&PID_C52B...)
     size_t pos = raw_name.find(L"HID#");
     if (pos == std::wstring::npos) pos = raw_name.find(L"ACPI#");
     if (pos == std::wstring::npos) pos = raw_name.find(L"USB#");
 
     if (pos != std::wstring::npos) {
         std::wstring hwid = raw_name.substr(pos);
-        // Trim trailing GUID string #{...}
+        // Trim trailing GUID substring #{...}
         size_t hash_pos = hwid.find(L"#{");
         if (hash_pos != std::wstring::npos) {
             hwid = hwid.substr(0, hash_pos);
@@ -92,6 +104,9 @@ std::vector<PhysicalDevice> DeviceManager::GetConnectedKeyboards() const {
     return keyboards;
 }
 
+/**
+ * Matches configured Person profile hardware IDs against live connected physical device handles.
+ */
 void DeviceManager::SyncWithConfig(AppConfig& config) {
     std::lock_guard<std::mutex> lock(m_mutex);
     RefreshDevices();
@@ -108,11 +123,11 @@ void DeviceManager::SyncWithConfig(AppConfig& config) {
         ps.mouse_hwid = pc.mouse_hwid;
         ps.keyboard_hwid = pc.keyboard_hwid;
 
-        // Position initial cursors spread out on screen
+        // Position initial virtual cursors evenly across screen
         ps.cursor_x = (virtual_screen_w / (config.persons.size() + 1)) * pc.id;
         ps.cursor_y = virtual_screen_h / 2;
 
-        // Match hardware handles
+        // Match hardware device handles by ID
         for (const auto& dev : m_devices) {
             if (dev.type == RIM_TYPEMOUSE && !pc.mouse_hwid.empty()) {
                 if (dev.hardware_id.find(pc.mouse_hwid) != std::wstring::npos ||
@@ -136,7 +151,7 @@ PersonState* DeviceManager::GetPersonByMouseHandle(HANDLE hDevice) {
     for (auto& person : m_persons) {
         if (person.mouse_handle == hDevice) return &person;
     }
-    // Fallback: If device is not yet bound to any specific person, return Person 1
+    // Fallback: Default to Person 1 if device is unassigned
     if (!m_persons.empty()) return &m_persons[0];
     return nullptr;
 }
@@ -167,6 +182,9 @@ void DeviceManager::StopPairing() {
     m_pairing_active = false;
 }
 
+/**
+ * Handles incoming raw input during interactive device pairing wizard to capture and bind device hardware IDs.
+ */
 bool DeviceManager::OnInputReceivedForPairing(HANDLE hDevice, DWORD type, AppConfig& config) {
     if (!m_pairing_active) return false;
 
