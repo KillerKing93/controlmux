@@ -42,6 +42,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         return 0;
 
+    case WM_APP + 100:
+        // Deferred startup: show Control Center dialog after message loop is running
+        if (g_gui) g_gui->OpenPairingWindow(GetModuleHandle(NULL));
+        return 0;
+
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
@@ -56,7 +61,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
  */
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLine, int nCmdShow) {
     // 1. Load application configuration
-    ConfigManager::Load(L"controlmux_config.ini", g_config);
+    // If a config file exists, reset defaults so we don't double-append persons
+    AppConfig fileConfig;
+    fileConfig.persons.clear();
+    if (ConfigManager::Load(L"controlmux_config.ini", fileConfig) && !fileConfig.persons.empty()) {
+        g_config = fileConfig;
+    }
 
     // 2. Instantiate core subsystems
     g_dev_mgr = new DeviceManager();
@@ -103,8 +113,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR lpCmdLin
     // Initial overlay render pass
     g_renderer->Render(g_dev_mgr->GetPersons(), g_router->GetActivePersonId());
 
-    // Show startup Control Center dialog so user immediately sees ControlMux is running
-    g_gui->OpenPairingWindow(hInstance);
+    // Post a deferred message to show Control Center dialog AFTER message loop starts
+    // This prevents blocking startup before the message pump is running
+    PostMessage(hwndMain, WM_APP + 100, 0, 0);
 
     // 6. Execute Win32 event message loop
     MSG msg;
