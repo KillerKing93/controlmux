@@ -146,48 +146,49 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
         return 0;
     }
 
-    // ── Suppress background erase (we paint everything) ─────────────────
-    case WM_ERASEBKGND: {
-        RECT rc; GetClientRect(hwnd, &rc);
-        HBRUSH br = CreateSolidBrush(BG);
-        FillRect((HDC)wp, &rc, br);
-        DeleteObject(br);
+    // ── Suppress background erase (double-buffering handles it) ────────
+    case WM_ERASEBKGND:
         return 1;
-    }
 
-    // ── Paint ────────────────────────────────────────────────────────────
+    // ── Paint (Double-buffered to Memory DC for 60 FPS smooth dragging) ─
     case WM_PAINT: {
         PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd, &ps);
-        SetBkMode(hdc, TRANSPARENT);
-
+        HDC hdcWindow = BeginPaint(hwnd, &ps);
         RECT rc; GetClientRect(hwnd, &rc);
+
+        // Double buffering memory DC
+        HDC hdc = CreateCompatibleDC(hdcWindow);
+        HBITMAP hbm = CreateCompatibleBitmap(hdcWindow, rc.right, rc.bottom);
+        HBITMAP hbmOld = (HBITMAP)SelectObject(hdc, hbm);
+
+        SetBkMode(hdc, TRANSPARENT);
 
         // Background
         HBRUSH brBg = CreateSolidBrush(BG);
         FillRect(hdc, &rc, brBg);
         DeleteObject(brBg);
 
-        // ── Gradient top bar (3px accent) ───────────────────────────────
-        for (int x = 0; x < rc.right; ++x) {
-            float t  = (float)x / rc.right;
-            BYTE r = (BYTE)(0   + t * 160);
-            BYTE g = (BYTE)(200 + t * (60 - 200));
-            BYTE b = (BYTE)(255 + t * (255 - 255));
-            HPEN p = CreatePen(PS_SOLID, 1, RGB(r, g, b));
-            HPEN op = (HPEN)SelectObject(hdc, p);
-            MoveToEx(hdc, x, 0, NULL); LineTo(hdc, x, 4);
-            SelectObject(hdc, op); DeleteObject(p);
-        }
+        // ── Top accent bar (4px) ──────────────────────────────────────────
+        RECT topBar = {0, 0, rc.right, 4};
+        HBRUSH brAccent = CreateSolidBrush(ACCENT);
+        FillRect(hdc, &topBar, brAccent);
+        DeleteObject(brAccent);
+
+        // Static cached fonts (created once, reused across frames)
+        static HFONT fTitle = MakeFont(22, true);
+        static HFONT fSub   = MakeFont(10, false, true);
+        static HFONT fLbl   = MakeFont(12, true);
+        static HFONT fHdr   = MakeFont(10, true);
+        static HFONT fRow   = MakeFont(12, true);
+        static HFONT fRowS  = MakeFont(10, true);
+        static HFONT fFt    = MakeFont(9, false, true);
 
         // ── Title ────────────────────────────────────────────────────────
-        HFONT fTitle = MakeFont(22, true);
-        HFONT fOld   = (HFONT)SelectObject(hdc, fTitle);
+        HFONT fOld = (HFONT)SelectObject(hdc, fTitle);
         SetTextColor(hdc, ACCENT);
         RECT rtit = {16, 10, rc.right, 42};
         DrawTextW(hdc, L"ControlMux", -1, &rtit, DT_LEFT | DT_SINGLELINE);
 
-        HFONT fSub = MakeFont(10, false, true);
         SelectObject(hdc, fSub);
         SetTextColor(hdc, TXT_DIM);
         RECT rsub = {16, 38, rc.right, 56};
@@ -195,7 +196,6 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
                   -1, &rsub, DT_LEFT | DT_SINGLELINE);
 
         // ── Status + mode row ─────────────────────────────────────────────
-        HFONT fLbl = MakeFont(12, true);
         SelectObject(hdc, fLbl);
 
         if (self) {
@@ -230,7 +230,6 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
             SelectObject(hdc, divOld); DeleteObject(div);
 
             // ── Pairing Banner or Person list header ─────────────────────
-            HFONT fHdr = MakeFont(10, true);
             SelectObject(hdc, fHdr);
 
             if (self->m_dev_mgr.IsPairing()) {
@@ -251,9 +250,6 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
             MoveToEx(hdc, 14, 117, NULL); LineTo(hdc, rc.right - 34, 117);
 
             // ── Person rows ───────────────────────────────────────────────
-            HFONT fRow  = MakeFont(12, true);
-            HFONT fRowS = MakeFont(10, true);
-
             int listTop = HDR_H;  // == 170
             int visStart = self->m_scroll_offset;
             int visEnd   = visStart + LIST_ROWS;
@@ -337,10 +333,6 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
 
             SelectClipRgn(hdc, NULL);
             DeleteObject(clip);
-
-            DeleteObject(fRow);
-            DeleteObject(fRowS);
-            DeleteObject(fHdr);
         }
 
         // ── Section label above button area ───────────────────────────────
@@ -351,7 +343,6 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
         SelectObject(hdc, d2Old); DeleteObject(div2);
 
         // ── Footer ────────────────────────────────────────────────────────
-        HFONT fFt = MakeFont(9, false, true);
         SelectObject(hdc, fFt);
         SetTextColor(hdc, TXT_DIM);
         RECT rfooter = {0, rc.bottom - 20, rc.right, rc.bottom - 4};
@@ -359,11 +350,15 @@ LRESULT CALLBACK GuiWin32::PanelWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM l
             L"ControlMux \u00a9 Alif Nurhidayat  \u2014  alifnurhidayatwork@gmail.com  "
             L"\u2014  Commercial: $29/seat or 7.5% royalty",
             -1, &rfooter, DT_CENTER | DT_SINGLELINE);
-        DeleteObject(fFt);
 
         SelectObject(hdc, fOld);
-        DeleteObject(fTitle); DeleteObject(fSub);
-        DeleteObject(fLbl);
+
+        // Atomic BitBlt memory buffer to screen
+        BitBlt(hdcWindow, 0, 0, rc.right, rc.bottom, hdc, 0, 0, SRCCOPY);
+
+        SelectObject(hdc, hbmOld);
+        DeleteObject(hbm);
+        DeleteDC(hdc);
 
         EndPaint(hwnd, &ps);
         return 0;
