@@ -91,19 +91,6 @@
     <path d="M 0,160 L 800,160 M 0,320 L 800,320 M 0,480 L 800,480 M 0,640 L 800,640" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
     <path d="M 160,0 L 160,800 M 320,0 L 320,800 M 480,0 L 480,800 M 640,0 L 640,800" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1" />
 
-    <!-- Data Stream Micro-Particles & Crosshairs -->
-    <g opacity="0.5">
-      <circle cx="120" cy="280" r="2.5" fill="#00F2FE" filter="url(#glow-subtle-cyan)" />
-      <circle cx="280" cy="460" r="2.5" fill="#00F2FE" />
-      <circle cx="680" cy="280" r="2.5" fill="#FF0844" />
-      <circle cx="520" cy="460" r="2.5" fill="#FF0844" filter="url(#glow-magenta)" />
-      <circle cx="400" cy="180" r="2" fill="#7F00FF" />
-
-      <path d="M 140,420 L 150,420 M 145,415 L 145,425" stroke="#00F2FE" stroke-width="1" opacity="0.6" />
-      <path d="M 650,420 L 660,420 M 655,415 L 655,425" stroke="#FF0844" stroke-width="1" opacity="0.6" />
-      <path d="M 395,120 L 405,120 M 400,115 L 400,125" stroke="#ffffff" stroke-width="1" opacity="0.4" />
-    </g>
-
     <!-- Outer Frame Edge Border -->
     <rect x="24" y="24" width="752" height="752" rx="28" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" />
 
@@ -120,19 +107,21 @@
     <circle cx="770" cy="400" r="3" fill="#7F00FF" />
   </g>
 
-  <!-- LAYER 2: CIRCUIT NODES & MULTIPLEXER CORE -->
+  <!-- LAYER 2: HIGH-TECH CABLES ATTACHED DIRECTLY TO THE BOTTOM OF THE MOUSE CURSORS -->
   <g id="layer-02-circuit-core">
     <!-- Outer Orbital Energy Rings -->
     <circle cx="400" cy="350" r="140" fill="none" stroke="url(#core-grad)" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12 8" />
     <circle cx="400" cy="350" r="95" fill="none" stroke="#00F2FE" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="6 6" />
 
-    <!-- Cyan Input Stream from Person 1 -->
-    <path d="M 285,340 Q 320,350 360,350" stroke="#00F2FE" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
-    <circle cx="360" cy="350" r="6" fill="#00F2FE" filter="url(#glow-cyan)" />
+    <!-- CYAN CABLE ATTACHED TO BOTTOM OF PERSON 1 MOUSE (FROM 270,390 TO CORE AT 362,350) -->
+    <path d="M 270,390 C 310,405 340,375 362,350" stroke="#00F2FE" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#glow-cyan)" />
+    <path d="M 270,390 C 310,405 340,375 362,350" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="6 6" fill="none" opacity="0.85" />
+    <circle cx="270" cy="390" r="5" fill="#00F2FE" stroke="#ffffff" stroke-width="1.5" filter="url(#glow-cyan)" />
 
-    <!-- Magenta Input Stream from Person 2 -->
-    <path d="M 515,340 Q 480,350 440,350" stroke="#FF0844" stroke-width="3.5" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
-    <circle cx="440" cy="350" r="6" fill="#FF0844" filter="url(#glow-magenta)" />
+    <!-- MAGENTA CABLE ATTACHED TO BOTTOM OF PERSON 2 MOUSE (FROM 530,390 TO CORE AT 438,350) -->
+    <path d="M 530,390 C 490,405 460,375 438,350" stroke="#FF0844" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#glow-magenta)" />
+    <path d="M 530,390 C 490,405 460,375 438,350" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="6 6" fill="none" opacity="0.85" />
+    <circle cx="530" cy="390" r="5" fill="#FF0844" stroke="#ffffff" stroke-width="1.5" filter="url(#glow-magenta)" />
 
     <!-- Central Multiplexer Reactor Housing -->
     <circle cx="400" cy="350" r="38" fill="#0c1024" stroke="url(#core-grad)" stroke-width="3.5" filter="url(#glow-cyan)" />
@@ -141,7 +130,7 @@
 
   <!-- LAYER 3: PERSON 1 CYAN CURSOR -->
   <g id="layer-03-cyan-cursor" filter="url(#drop-shadow)">
-    <!-- Cyan Cursor Geometry -->
+    <!-- Cyan Cursor Geometry (Bottom Stem at 270,390) -->
     <g filter="url(#glow-cyan)">
       <polygon points="180,260 205,380 225,350 260,400 280,380 245,330 285,330" fill="url(#cyan-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
       <polyline points="186,270 206,365 220,342" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
@@ -157,7 +146,7 @@
 
   <!-- LAYER 4: PERSON 2 MAGENTA CURSOR -->
   <g id="layer-04-magenta-cursor" filter="url(#drop-shadow)">
-    <!-- Magenta Cursor Geometry -->
+    <!-- Magenta Cursor Geometry (Bottom Stem at 530,390) -->
     <g filter="url(#glow-magenta)">
       <polygon points="620,260 595,380 575,350 540,400 520,380 555,330 515,330" fill="url(#magenta-grad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
       <polyline points="614,270 594,365 580,342" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" fill="none" />
